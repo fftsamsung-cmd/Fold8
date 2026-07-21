@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { SwipeStack } from './ui/swipe-stack'
 import { CountUpSpan } from './CountUpSpan'
+import { useIsCompact } from './SectionKit'
 import PerformanceFrameSection from './PerformanceFrameSection'
 import CameraFrameSection from './CameraFrameSection'
 import BatterySection from './BatterySection'
@@ -58,33 +58,6 @@ function Section({
 
 function Eyebrow({ children }: { children: ReactNode }) {
   return <div className="ultra__eyebrow">{children}</div>
-}
-
-/* Two labeled compare panes, draggable via the same swipe-card physics the
-   reference project uses for its photo swiper — there's no compare
-   photography yet, so the physics drive the existing label panes instead. */
-function DeviceMock({ left, right }: { left: string; right: string }) {
-  return (
-    <div className="ultra-mock-wrap" aria-hidden="true">
-      <SwipeStack
-        cardWidth={320}
-        cardHeight={266}
-        className="ultra-mock-swipe"
-        cards={[
-          <div className="ultra-mock">
-            <div className="ultra-mock__pane"><span className="ultra-mock__tag">{left}</span></div>
-            <div className="ultra-mock__seam" />
-            <div className="ultra-mock__pane"><span className="ultra-mock__tag">{right}</span></div>
-          </div>,
-          <div className="ultra-mock ultra-mock--flip">
-            <div className="ultra-mock__pane"><span className="ultra-mock__tag">{right}</span></div>
-            <div className="ultra-mock__seam" />
-            <div className="ultra-mock__pane"><span className="ultra-mock__tag">{left}</span></div>
-          </div>,
-        ]}
-      />
-    </div>
-  )
 }
 
 /* One scroll-revealed text block within DisplayRevealSection's cinematic
@@ -146,13 +119,7 @@ function DisplayRevealSection({
   // whole stage to a ~200px-tall sliver with hundreds of px of blank space
   // above and below, and the text becomes unreadably small. Below this
   // width, swap to a normal stacked responsive layout instead.
-  const [isCompact, setIsCompact] = useState(() => typeof window !== 'undefined' && window.innerWidth < 860)
-
-  useEffect(() => {
-    const onResize = () => setIsCompact(window.innerWidth < 860)
-    window.addEventListener('resize', onResize)
-    return () => window.removeEventListener('resize', onResize)
-  }, [])
+  const isCompact = useIsCompact(860)
 
   useEffect(() => {
     if (isCompact) return

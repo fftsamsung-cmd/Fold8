@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { FeatureCard } from './SectionKit'
-import { PhotoAssistCard } from './GalaxyAiStackSection'
+import { FeatureCard, useIsCompact } from './SectionKit'
+import { GalaxyAiDesktopCard, PHOTO_ASSIST_DATA } from './GalaxyAiStackSection'
 import horizontalLockVideo from '../assets/Fold/horizontal lock.mp4'
 import galaxyAiVideo from '../assets/Ultra/galaxy-ai.mp4'
 
@@ -127,8 +127,6 @@ const COMPACT_HLOCK_EXIT_START = 0.84
 const COMPACT_PHOTO_ENTER = 0.92
 
 const clamp01 = (v: number) => Math.min(Math.max(v, 0), 1)
-
-const isCompactWidth = () => typeof window !== 'undefined' && window.innerWidth < 860
 
 const HORIZONTAL_LOCK_CARD = (
   <FeatureCard
@@ -264,7 +262,11 @@ export default function FoldCameraFrameSection() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const imagesRef = useRef<(HTMLCanvasElement | null)[]>(Array(TOTAL_FRAMES).fill(null))
   const [ready, setReady] = useState(false)
-  const [isCompact, setIsCompact] = useState(isCompactWidth)
+  const isCompact = useIsCompact(860)
+  // This exploded-parts sequence is ~12MB of PNGs — deferring the preload
+  // loop below until the section is actually near the viewport means a
+  // visitor who never scrolls this far never downloads it.
+  const [nearViewport, setNearViewport] = useState(false)
 
   const titleRef = useRef<HTMLDivElement>(null)
   const subtitleRef = useRef<HTMLDivElement>(null)
@@ -282,12 +284,26 @@ export default function FoldCameraFrameSection() {
   const compactPhotoLayerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const onResize = () => setIsCompact(isCompactWidth())
-    window.addEventListener('resize', onResize)
-    return () => window.removeEventListener('resize', onResize)
+    const wrapper = wrapperRef.current
+    if (!wrapper || typeof IntersectionObserver === 'undefined') {
+      setNearViewport(true)
+      return
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setNearViewport(true)
+          observer.disconnect()
+        }
+      },
+      { rootMargin: '600px 0px' }
+    )
+    observer.observe(wrapper)
+    return () => observer.disconnect()
   }, [])
 
   useEffect(() => {
+    if (!nearViewport) return
     const canvas = canvasRef.current
     const wrapper = wrapperRef.current
     if (!canvas || !wrapper) return
@@ -342,7 +358,7 @@ export default function FoldCameraFrameSection() {
 
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
-    const revealEls: [Element | null, readonly [number, number]][] = [
+    const revealEls: [HTMLElement | SVGSVGElement | null, readonly [number, number]][] = [
       [titleRef.current, REVEAL_BANDS.title],
       [subtitleRef.current, REVEAL_BANDS.subtitle],
       [connectorsRef.current, REVEAL_BANDS.connectors],
@@ -461,7 +477,7 @@ export default function FoldCameraFrameSection() {
       window.removeEventListener('resize', updatePaths)
       ctxGsap.revert()
     }
-  }, [isCompact])
+  }, [isCompact, nearViewport])
 
   const cameraVisual = (
     <div style={{ position: 'relative', maxHeight: '70vh', maxWidth: '76vw' }}>
@@ -944,7 +960,7 @@ export default function FoldCameraFrameSection() {
           ref={photoCardRef}
           style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3, opacity: 0 }}
         >
-          <PhotoAssistCard sectionName="מצלמה" />
+          <GalaxyAiDesktopCard data={PHOTO_ASSIST_DATA} sectionName="מצלמה" />
         </div>
       </div>
     </div>

@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { Video } from 'lucide-react'
+import foldReadingVideo from '../assets/Fold/hf_20260721_220118_f9826d6a-ce69-41d3-aaa2-c55cbac701e2.mp4'
 
 /* Mobile-only (<860px) sticky version of Reading & Browsing — same
    "own screen, scroll-driven reveal" production value as Design/Display/
@@ -89,14 +89,14 @@ export default function FoldReadingMobileSection() {
           <p style={{ fontFamily: 'var(--font-primary)', fontSize: 13, fontWeight: 400, lineHeight: 1.5, color: 'rgba(23,23,28,0.65)', margin: 0 }}>
             חוויה מדהימה של קריאה, גלישה וצפייה — במצב מקופל או פתוח. נוחות קריאה מקסימלית ומעבר מסכים חלק בכל סביבה.
           </p>
-          <div
-            className="fold-media-slot"
-            aria-hidden="true"
-            style={{ width: '100%', aspectRatio: '16 / 9', borderRadius: 12 }}
-          >
-            <Video size={22} strokeWidth={1.5} />
-            <span>וידאו: מעבר בין מצב מקופל לפתוח בזמן גלישה</span>
-          </div>
+          <video
+            src={foldReadingVideo}
+            autoPlay
+            loop
+            muted
+            playsInline
+            style={{ width: '100%', aspectRatio: '16 / 9', borderRadius: 12, objectFit: 'cover', display: 'block' }}
+          />
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             {[
               'פתחו את דפדפן Samsung במסך החיצוני',

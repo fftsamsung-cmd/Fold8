@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { useIsCompact, useAutoAdvanceColors, ColorSwatchPicker } from './SectionKit'
 import designVideo from '../assets/Ultra/3D.mp4'
 import colorPurpleImg from '../assets/Ultra/צבעים/סגול.png'
 import colorBlackImg from '../assets/Ultra/צבעים/שחור.png'
@@ -41,33 +42,7 @@ const COLORS = [
    a manual click restarts the timer so the auto-advance doesn't immediately
    undo the visitor's own choice. */
 function ColorsCard() {
-  const [activeId, setActiveId] = useState(COLORS[0].id)
-  const active = COLORS.find((c) => c.id === activeId) ?? COLORS[0]
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
-
-  const restartAutoAdvance = () => {
-    if (timerRef.current) clearInterval(timerRef.current)
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-    timerRef.current = setInterval(() => {
-      setActiveId((current) => {
-        const idx = COLORS.findIndex((c) => c.id === current)
-        return COLORS[(idx + 1) % COLORS.length].id
-      })
-    }, 2000)
-  }
-
-  useEffect(() => {
-    restartAutoAdvance()
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  const handleSelect = (id: string) => {
-    setActiveId(id)
-    restartAutoAdvance()
-  }
+  const { activeId, active, handleSelect } = useAutoAdvanceColors(COLORS)
 
   return (
     <div className="ultra-split">
@@ -86,23 +61,7 @@ function ColorsCard() {
         <div className="ultra__eyebrow">משנים את חוקי הצבע</div>
         <h2 className="ultra-headline ultra-headline--colors">מגוון צבעים אייקונים</h2>
         <p className="ultra-body">ה-Z Fold הכי אייקוני אי פעם. מגיע ב-3 גוונים מטורפים.</p>
-        <div className="ultra-colors-swatches">
-          {COLORS.map((c) => (
-            <motion.button
-              key={c.id}
-              type="button"
-              aria-label={c.name}
-              aria-pressed={c.id === activeId}
-              className="ultra-colors-swatch"
-              style={{ background: c.hex, borderColor: c.id === activeId ? '#fff' : 'transparent' }}
-              animate={{ scale: c.id === activeId ? 1.15 : 1 }}
-              transition={{ duration: 0.2 }}
-              onClick={() => handleSelect(c.id)}
-              whileHover={{ scale: c.id === activeId ? 1.15 : 1.2 }}
-              whileTap={{ scale: 0.95 }}
-            />
-          ))}
-        </div>
+        <ColorSwatchPicker colors={COLORS} activeId={activeId} onSelect={handleSelect} />
         <div className="ultra-colors-name">{active.name}</div>
         <p className="ultra-colors-note">* זמינות הצבעים עשויה להשתנות בהתאם לרשת השיווק או המפעילה הסלולרית</p>
       </div>
@@ -125,7 +84,7 @@ export default function DesignSection() {
   // desktop split/crossfade regardless of viewport. isCompact adds the same
   // sticky single-screen crossfade-in-place technique the rest of the
   // mobile work uses (see the compact branch below); desktop is untouched.
-  const [isCompact, setIsCompact] = useState(() => typeof window !== 'undefined' && window.innerWidth < 860)
+  const isCompact = useIsCompact(860)
   const compactWrapperRef = useRef<HTMLDivElement>(null)
   const compactVideoLayerRef = useRef<HTMLDivElement>(null)
   const compactColorsLayerRef = useRef<HTMLDivElement>(null)
@@ -137,13 +96,6 @@ export default function DesignSection() {
 
   useEffect(() => {
     setReduceMotion(window.matchMedia('(prefers-reduced-motion: reduce)').matches)
-  }, [])
-
-  useEffect(() => {
-    const onResize = () => setIsCompact(window.innerWidth < 860)
-    onResize()
-    window.addEventListener('resize', onResize)
-    return () => window.removeEventListener('resize', onResize)
   }, [])
 
   const restartCompactColorAdvance = () => {

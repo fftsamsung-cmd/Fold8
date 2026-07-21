@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { CountUpSpan } from './CountUpSpan'
+import { useIsCompact } from './SectionKit'
 import forGalaxyBadge from '../assets/Ultra/for-galaxy-badge.png'
 
 gsap.registerPlugin(ScrollTrigger)
@@ -63,16 +64,33 @@ export default function PerformanceFrameSection() {
   const [ready, setReady] = useState(false)
   const [cardVisible, setCardVisible] = useState(false)
   const cardVisibleRef = useRef(false)
-  const [isCompact, setIsCompact] = useState(() => typeof window !== 'undefined' && window.innerWidth < 860)
+  const isCompact = useIsCompact(860)
+  // This sequence is 47-101MB of PNGs depending on viewport — deferring the
+  // preload loop below until the section is actually near the viewport
+  // means a visitor who never scrolls this far never downloads it.
+  const [nearViewport, setNearViewport] = useState(false)
 
   useEffect(() => {
-    const onResize = () => setIsCompact(window.innerWidth < 860)
-    onResize()
-    window.addEventListener('resize', onResize)
-    return () => window.removeEventListener('resize', onResize)
+    const wrapper = wrapperRef.current
+    if (!wrapper || typeof IntersectionObserver === 'undefined') {
+      setNearViewport(true)
+      return
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setNearViewport(true)
+          observer.disconnect()
+        }
+      },
+      { rootMargin: '600px 0px' }
+    )
+    observer.observe(wrapper)
+    return () => observer.disconnect()
   }, [])
 
   useEffect(() => {
+    if (!nearViewport) return
     const canvas = canvasRef.current
     const wrapper = wrapperRef.current
     if (!canvas || !wrapper) return
@@ -151,7 +169,7 @@ export default function PerformanceFrameSection() {
     }
 
     return () => ctxGsap.revert()
-  }, [isCompact])
+  }, [isCompact, nearViewport])
 
   // Mobile's sequence is a separate white-background 1:1 asset (not a crop
   // of desktop's 1920x1080 dark one) — 'cover' would zoom into a 1:1 image

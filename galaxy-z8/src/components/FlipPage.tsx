@@ -1,7 +1,6 @@
-import { useEffect, useRef, useState } from 'react'
-import { motion } from 'framer-motion'
+import { useEffect, useState } from 'react'
 import SalesTip from './SalesTip'
-import { Section, Eyebrow, Attrs, MediaPlaceholder, MainLayer, CrossfadeStage, FeatureCard } from './SectionKit'
+import { Section, Eyebrow, Attrs, MediaPlaceholder, MainLayer, CrossfadeStage, FeatureCard, useIsCompact, useAutoAdvanceColors, ColorSwatchPicker } from './SectionKit'
 import FlipDesignMobileSection from './FlipDesignMobileSection'
 import FlipCamerasMobileSection from './FlipCamerasMobileSection'
 import FlipFlexWindowMobileSection from './FlipFlexWindowMobileSection'
@@ -31,33 +30,7 @@ const FLIP_COLORS = [
 ] as const
 
 function FlipColorsCard({ tip }: { tip?: string }) {
-  const [activeId, setActiveId] = useState<string>(FLIP_COLORS[0].id)
-  const active = FLIP_COLORS.find((c) => c.id === activeId) ?? FLIP_COLORS[0]
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
-
-  const restartAutoAdvance = () => {
-    if (timerRef.current) clearInterval(timerRef.current)
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-    timerRef.current = setInterval(() => {
-      setActiveId((current) => {
-        const idx = FLIP_COLORS.findIndex((c) => c.id === current)
-        return FLIP_COLORS[(idx + 1) % FLIP_COLORS.length].id
-      })
-    }, 2000)
-  }
-
-  useEffect(() => {
-    restartAutoAdvance()
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  const handleSelect = (id: string) => {
-    setActiveId(id)
-    restartAutoAdvance()
-  }
+  const { activeId, active, handleSelect } = useAutoAdvanceColors(FLIP_COLORS)
 
   return (
     <MainLayer mobileCard pinned>
@@ -85,23 +58,7 @@ function FlipColorsCard({ tip }: { tip?: string }) {
             שלבו את הצבעים האייקוניים והטרנדיים של ה-Galaxy Z Flip8 עם הלוק היומי שלכם, ליצירת
             סגנון ייחודי.
           </p>
-          <div className="ultra-colors-swatches">
-            {FLIP_COLORS.map((c) => (
-              <motion.button
-                key={c.id}
-                type="button"
-                aria-label={c.name}
-                aria-pressed={c.id === activeId}
-                className="ultra-colors-swatch"
-                style={{ background: c.hex, borderColor: c.id === activeId ? '#fff' : 'transparent' }}
-                animate={{ scale: c.id === activeId ? 1.15 : 1 }}
-                transition={{ duration: 0.2 }}
-                onClick={() => handleSelect(c.id)}
-                whileHover={{ scale: c.id === activeId ? 1.15 : 1.2 }}
-                whileTap={{ scale: 0.95 }}
-              />
-            ))}
-          </div>
+          <ColorSwatchPicker colors={FLIP_COLORS} activeId={activeId} onSelect={handleSelect} />
           <div className="ultra-colors-name">{active.name}</div>
           <p className="ultra-colors-note">* זמינות הצבעים עשויה להשתנות בהתאם לרשת השיווק או המפעילה הסלולרית</p>
         </div>
@@ -201,19 +158,11 @@ const CAMERA_MAIN = (
    CrossfadeStage, since it already falls back to a plain stacked layout on
    its own. */
 function DesignSection() {
-  const [isCompact, setIsCompact] = useState(() => typeof window !== 'undefined' && window.innerWidth < 860)
+  const isCompact = useIsCompact(860, { settle: true })
   const [reduceMotion, setReduceMotion] = useState(false)
 
   useEffect(() => {
     setReduceMotion(window.matchMedia('(prefers-reduced-motion: reduce)').matches)
-    const onResize = () => setIsCompact(window.innerWidth < 860)
-    onResize()
-    const settleTimer = setTimeout(onResize, 150)
-    window.addEventListener('resize', onResize)
-    return () => {
-      clearTimeout(settleTimer)
-      window.removeEventListener('resize', onResize)
-    }
   }, [])
 
   if (isCompact && !reduceMotion) {
@@ -250,19 +199,11 @@ function DesignSection() {
    CrossfadeStage exactly as before; reduced-motion also keeps CrossfadeStage,
    since it already falls back to a plain stacked layout on its own. */
 function CamerasSection() {
-  const [isCompact, setIsCompact] = useState(() => typeof window !== 'undefined' && window.innerWidth < 860)
+  const isCompact = useIsCompact(860, { settle: true })
   const [reduceMotion, setReduceMotion] = useState(false)
 
   useEffect(() => {
     setReduceMotion(window.matchMedia('(prefers-reduced-motion: reduce)').matches)
-    const onResize = () => setIsCompact(window.innerWidth < 860)
-    onResize()
-    const settleTimer = setTimeout(onResize, 150)
-    window.addEventListener('resize', onResize)
-    return () => {
-      clearTimeout(settleTimer)
-      window.removeEventListener('resize', onResize)
-    }
   }, [])
 
   if (isCompact && !reduceMotion) {
@@ -319,19 +260,11 @@ function CamerasSection() {
    case — see that file). Desktop keeps the original FeatureCard exactly as
    before; reduced-motion also keeps it, rendered directly in normal flow. */
 function FlexWindowSection() {
-  const [isCompact, setIsCompact] = useState(() => typeof window !== 'undefined' && window.innerWidth < 860)
+  const isCompact = useIsCompact(860, { settle: true })
   const [reduceMotion, setReduceMotion] = useState(false)
 
   useEffect(() => {
     setReduceMotion(window.matchMedia('(prefers-reduced-motion: reduce)').matches)
-    const onResize = () => setIsCompact(window.innerWidth < 860)
-    onResize()
-    const settleTimer = setTimeout(onResize, 150)
-    window.addEventListener('resize', onResize)
-    return () => {
-      clearTimeout(settleTimer)
-      window.removeEventListener('resize', onResize)
-    }
   }, [])
 
   if (isCompact && !reduceMotion) {

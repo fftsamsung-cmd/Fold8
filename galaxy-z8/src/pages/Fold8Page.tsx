@@ -1,5 +1,4 @@
 import Navbar from '../components/Navbar'
-import FoldHero from '../components/FoldHero'
 import FoldPage from '../components/FoldPage'
 import ContinueNav from '../components/ContinueNav'
 
@@ -17,7 +16,6 @@ export default function Fold8Page() {
   return (
     <main lang="he" dir="rtl" className="page--fold">
       <Navbar sections={FOLD_SECTIONS} />
-      <FoldHero />
       <FoldPage />
       <ContinueNav sectionIds={FOLD_SECTIONS.map((s) => s.id)} />
     </main>

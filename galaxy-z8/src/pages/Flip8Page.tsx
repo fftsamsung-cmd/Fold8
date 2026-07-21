@@ -1,5 +1,4 @@
 import Navbar from '../components/Navbar'
-import FlipHero from '../components/FlipHero'
 import FlipPage from '../components/FlipPage'
 import ContinueNav from '../components/ContinueNav'
 
@@ -15,7 +14,6 @@ export default function Flip8Page() {
   return (
     <main lang="he" dir="rtl" className="page--flip">
       <Navbar sections={FLIP_SECTIONS} />
-      <FlipHero />
       <FlipPage />
       <ContinueNav sectionIds={FLIP_SECTIONS.map((s) => s.id)} />
     </main>

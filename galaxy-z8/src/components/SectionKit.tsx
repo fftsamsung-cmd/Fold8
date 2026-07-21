@@ -1,10 +1,19 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { motion } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { Image as ImageIcon, Video } from 'lucide-react'
 import { SwipeStack } from './ui/swipe-stack'
 import { CountUpSpan } from './CountUpSpan'
 import SalesTip from './SalesTip'
+// The shared "ultra-*"/"followcam__*" design-system classes this file's
+// components render (Section, FeatureCard, MainLayer, CrossfadeStage, ...)
+// live in UltraPage.css. Fold8Page/Flip8Page use those classes directly but
+// never import that stylesheet themselves — it only worked because every
+// page's CSS currently bundles together. Importing it here, from the one
+// module every device page actually imports, keeps it working once routes
+// are code-split (see Task C).
+import './UltraPage.css'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -16,6 +25,100 @@ gsap.registerPlugin(ScrollTrigger)
    to give its own wrapper class (.fold, .flip, ...) the same
    custom-property contract .ultra has (--ultra-ink, --ultra-line,
    --ultra-mono, --samsung-blue, etc.) with its own --accent-color. */
+
+/* Shared "is this a mobile/tablet viewport" state — the same
+   useState(() => innerWidth < breakpoint) + resize-listener boilerplate was
+   repeated (with minor drift) across ~10 components. Pass `settle: true`
+   for the variant some of those call sites added: a one-off re-check ~150ms
+   after mount, for environments that report a transiently narrow
+   innerWidth on the very first layout pass (e.g. an embedded viewport still
+   settling to its final size) before an actual resize event would catch it. */
+export function useIsCompact(breakpoint = 860, { settle = false }: { settle?: boolean } = {}) {
+  const [isCompact, setIsCompact] = useState(() => typeof window !== 'undefined' && window.innerWidth < breakpoint)
+
+  useEffect(() => {
+    const onResize = () => setIsCompact(window.innerWidth < breakpoint)
+    onResize()
+    window.addEventListener('resize', onResize)
+    const settleTimer = settle ? setTimeout(onResize, 150) : undefined
+    return () => {
+      window.removeEventListener('resize', onResize)
+      if (settleTimer) clearTimeout(settleTimer)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [breakpoint, settle])
+
+  return isCompact
+}
+
+/* Shared color-swatch auto-advance state — the same activeId state +
+   2s-interval + restart-on-manual-select logic was triplicated verbatim
+   (only the color data array differed) across Ultra's ColorsCard,
+   FoldColorsCard, and FlipColorsCard. Each page keeps its own data array,
+   copy, and card layout/wrapper — only this mechanism moves here. */
+export function useAutoAdvanceColors<T extends { id: string }>(colors: readonly T[]) {
+  const [activeId, setActiveId] = useState<string>(colors[0].id)
+  const active = colors.find((c) => c.id === activeId) ?? colors[0]
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  const restartAutoAdvance = () => {
+    if (timerRef.current) clearInterval(timerRef.current)
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    timerRef.current = setInterval(() => {
+      setActiveId((current) => {
+        const idx = colors.findIndex((c) => c.id === current)
+        return colors[(idx + 1) % colors.length].id
+      })
+    }, 2000)
+  }
+
+  useEffect(() => {
+    restartAutoAdvance()
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const handleSelect = (id: string) => {
+    setActiveId(id)
+    restartAutoAdvance()
+  }
+
+  return { activeId, active, handleSelect }
+}
+
+/* Shared swatch-row markup paired with the hook above — identical
+   motion.button loop across all three ColorsCard variants. */
+export function ColorSwatchPicker<T extends { id: string; name: string; hex: string }>({
+  colors,
+  activeId,
+  onSelect,
+}: {
+  colors: readonly T[]
+  activeId: string
+  onSelect: (id: string) => void
+}) {
+  return (
+    <div className="ultra-colors-swatches">
+      {colors.map((c) => (
+        <motion.button
+          key={c.id}
+          type="button"
+          aria-label={c.name}
+          aria-pressed={c.id === activeId}
+          className="ultra-colors-swatch"
+          style={{ background: c.hex, borderColor: c.id === activeId ? '#fff' : 'transparent' }}
+          animate={{ scale: c.id === activeId ? 1.15 : 1 }}
+          transition={{ duration: 0.2 }}
+          onClick={() => onSelect(c.id)}
+          whileHover={{ scale: c.id === activeId ? 1.15 : 1.2 }}
+          whileTap={{ scale: 0.95 }}
+        />
+      ))}
+    </div>
+  )
+}
 
 export function useReveal<T extends HTMLElement>() {
   const ref = useRef<T>(null)
@@ -172,27 +275,43 @@ export function CrossfadeStage({
 }) {
   const wrapperRef = useRef<HTMLDivElement>(null)
   const layerRefs = useRef<(HTMLDivElement | null)[]>([])
-  const [isCompact, setIsCompact] = useState(() => typeof window !== 'undefined' && window.innerWidth < compactBreakpoint)
+  const isCompact = useIsCompact(compactBreakpoint, { settle: true })
   const [reduceMotion, setReduceMotion] = useState(false)
+  // Layers carry <video autoPlay> elements (design/camera/colors media) that
+  // would otherwise all start fetching/decoding the moment the page mounts,
+  // regardless of how far down the page this stage sits — most of a device
+  // page's eager media weight comes from stages nobody has scrolled to yet.
+  // Layers aren't rendered into the DOM at all until this stage is close to
+  // the viewport, then stay mounted (no unmount-on-scroll-away, to avoid
+  // interrupting a video the visitor is currently watching).
+  const [nearViewport, setNearViewport] = useState(false)
 
   useEffect(() => {
     setReduceMotion(window.matchMedia('(prefers-reduced-motion: reduce)').matches)
-    const onResize = () => setIsCompact(window.innerWidth < compactBreakpoint)
-    onResize()
-    // Some environments report a transiently narrow innerWidth on the very
-    // first layout pass (e.g. an embedded viewport still settling to its
-    // final size) — a delayed re-check catches that without waiting for an
-    // actual user resize.
-    const settleTimer = setTimeout(onResize, 150)
-    window.addEventListener('resize', onResize)
-    return () => {
-      clearTimeout(settleTimer)
-      window.removeEventListener('resize', onResize)
-    }
   }, [])
 
   useEffect(() => {
-    if (isCompact || reduceMotion) return
+    const wrapper = wrapperRef.current
+    if (!wrapper) return
+    if (typeof IntersectionObserver === 'undefined') {
+      setNearViewport(true)
+      return
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setNearViewport(true)
+          observer.disconnect()
+        }
+      },
+      { rootMargin: '600px 0px' }
+    )
+    observer.observe(wrapper)
+    return () => observer.disconnect()
+  }, [])
+
+  useEffect(() => {
+    if (isCompact || reduceMotion || !nearViewport) return
     const wrapper = wrapperRef.current
     if (!wrapper) return
     const n = layers.length
@@ -244,12 +363,12 @@ export function CrossfadeStage({
 
     return () => ctx.revert()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isCompact, reduceMotion])
+  }, [isCompact, reduceMotion, nearViewport])
 
   if (isCompact || reduceMotion) {
     return (
-      <div id={id} aria-label={ariaLabel} style={{ display: 'flex', flexDirection: 'column', gap: 48, background, padding: '56px 20px' }}>
-        {layers.map((layer, i) => (
+      <div ref={wrapperRef} id={id} aria-label={ariaLabel} style={{ display: 'flex', flexDirection: 'column', gap: 48, background, padding: '56px 20px' }}>
+        {nearViewport && layers.map((layer, i) => (
           <div key={i} style={{ display: 'flex', justifyContent: 'center' }}>{layer}</div>
         ))}
       </div>
@@ -259,7 +378,7 @@ export function CrossfadeStage({
   return (
     <div ref={wrapperRef} id={id} aria-label={ariaLabel} style={{ height: wrapperHeight, position: 'relative', background }}>
       <div style={{ position: 'sticky', top: 0, height: '100vh', width: '100%', overflow: 'hidden', background }}>
-        {layers.map((layer, i) => (
+        {nearViewport && layers.map((layer, i) => (
           <div
             key={i}
             ref={(el) => { layerRefs.current[i] = el }}

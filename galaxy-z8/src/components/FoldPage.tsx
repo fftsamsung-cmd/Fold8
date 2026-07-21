@@ -1,16 +1,16 @@
 import { useEffect, useRef, useState } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { motion } from 'framer-motion'
 import { CountUpSpan } from './CountUpSpan'
 import PerformanceFrameSection from './PerformanceFrameSection'
 import FoldCameraFrameSection from './FoldCameraFrameSection'
 import FoldDisplayRevealSection from './FoldDisplayRevealSection'
 import SalesTip from './SalesTip'
-import { Section, Eyebrow, Attrs, MediaPlaceholder, MainLayer, CrossfadeStage, FeatureCard } from './SectionKit'
+import { Section, Eyebrow, Attrs, MainLayer, CrossfadeStage, FeatureCard, useIsCompact, useAutoAdvanceColors, ColorSwatchPicker } from './SectionKit'
 import FoldDesignMobileSection from './FoldDesignMobileSection'
 import FoldReadingMobileSection from './FoldReadingMobileSection'
 import foldDesignVideo from '../assets/Fold/SM-F971_ZFold8 Wide_Lavender.mp4'
+import foldReadingVideo from '../assets/Fold/hf_20260721_220118_f9826d6a-ce69-41d3-aaa2-c55cbac701e2.mp4'
 import colorPurpleImg from '../assets/Fold/צבעים/צבע_סגול-removebg-preview.png'
 import colorBlackImg from '../assets/Fold/צבעים/צבע_שחור-removebg-preview.png'
 import colorWhiteImg from '../assets/Fold/צבעים/צבע_לבן-removebg-preview.png'
@@ -31,33 +31,7 @@ const FOLD_COLORS = [
 ] as const
 
 function FoldColorsCard({ tip }: { tip?: string }) {
-  const [activeId, setActiveId] = useState<string>(FOLD_COLORS[0].id)
-  const active = FOLD_COLORS.find((c) => c.id === activeId) ?? FOLD_COLORS[0]
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
-
-  const restartAutoAdvance = () => {
-    if (timerRef.current) clearInterval(timerRef.current)
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-    timerRef.current = setInterval(() => {
-      setActiveId((current) => {
-        const idx = FOLD_COLORS.findIndex((c) => c.id === current)
-        return FOLD_COLORS[(idx + 1) % FOLD_COLORS.length].id
-      })
-    }, 2000)
-  }
-
-  useEffect(() => {
-    restartAutoAdvance()
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  const handleSelect = (id: string) => {
-    setActiveId(id)
-    restartAutoAdvance()
-  }
+  const { activeId, active, handleSelect } = useAutoAdvanceColors(FOLD_COLORS)
 
   return (
     <MainLayer mobileCard>
@@ -82,23 +56,7 @@ function FoldColorsCard({ tip }: { tip?: string }) {
         <Eyebrow>גימור</Eyebrow>
         <h2 className="ultra-headline">מגוון צבעים טרנדיים שמושכים את העין</h2>
         <p className="ultra-body">ה-Z Fold8 מגיע ב-3 גוונים אופנתיים וטרנדיים, התואמים את העיצוב המרהיב.</p>
-        <div className="ultra-colors-swatches">
-          {FOLD_COLORS.map((c) => (
-            <motion.button
-              key={c.id}
-              type="button"
-              aria-label={c.name}
-              aria-pressed={c.id === activeId}
-              className="ultra-colors-swatch"
-              style={{ background: c.hex, borderColor: c.id === activeId ? '#fff' : 'transparent' }}
-              animate={{ scale: c.id === activeId ? 1.15 : 1 }}
-              transition={{ duration: 0.2 }}
-              onClick={() => handleSelect(c.id)}
-              whileHover={{ scale: c.id === activeId ? 1.15 : 1.2 }}
-              whileTap={{ scale: 0.95 }}
-            />
-          ))}
-        </div>
+        <ColorSwatchPicker colors={FOLD_COLORS} activeId={activeId} onSelect={handleSelect} />
         <div className="ultra-colors-name">{active.name}</div>
         <p className="ultra-colors-note">* זמינות הצבעים עשויה להשתנות בהתאם לרשת השיווק או המפעילה הסלולרית</p>
       </div>
@@ -150,19 +108,11 @@ const DESIGN_MAIN = (
    its own (isCompact || reduceMotion) and a second sticky-pin implementation
    isn't worth building for that case. */
 function DesignSection() {
-  const [isCompact, setIsCompact] = useState(() => typeof window !== 'undefined' && window.innerWidth < 860)
+  const isCompact = useIsCompact(860, { settle: true })
   const [reduceMotion, setReduceMotion] = useState(false)
 
   useEffect(() => {
     setReduceMotion(window.matchMedia('(prefers-reduced-motion: reduce)').matches)
-    const onResize = () => setIsCompact(window.innerWidth < 860)
-    onResize()
-    const settleTimer = setTimeout(onResize, 150)
-    window.addEventListener('resize', onResize)
-    return () => {
-      clearTimeout(settleTimer)
-      window.removeEventListener('resize', onResize)
-    }
   }, [])
 
   if (isCompact && !reduceMotion) {
@@ -187,19 +137,11 @@ function DesignSection() {
    the original plain <Section> (also the reduced-motion fallback, since a
    held pin is itself a motion effect). */
 function ReadingSection() {
-  const [isCompact, setIsCompact] = useState(() => typeof window !== 'undefined' && window.innerWidth < 860)
+  const isCompact = useIsCompact(860, { settle: true })
   const [reduceMotion, setReduceMotion] = useState(false)
 
   useEffect(() => {
     setReduceMotion(window.matchMedia('(prefers-reduced-motion: reduce)').matches)
-    const onResize = () => setIsCompact(window.innerWidth < 860)
-    onResize()
-    const settleTimer = setTimeout(onResize, 150)
-    window.addEventListener('resize', onResize)
-    return () => {
-      clearTimeout(settleTimer)
-      window.removeEventListener('resize', onResize)
-    }
   }, [])
 
   if (isCompact && !reduceMotion) {
@@ -221,7 +163,7 @@ function ReadingSection() {
           'חוויית קריאה רציפה – במסך החיצוני ובראשי',
           'גלישה סוחפת – מעבר מסכים חלק בהתאם לסיטואציה',
         ]}
-        media={<MediaPlaceholder label="וידאו: מעבר בין מצב מקופל לפתוח בזמן גלישה" />}
+        media={<video src={foldReadingVideo} autoPlay loop muted playsInline />}
       />
       <SalesTip text="תנו ללקוח לגלול אתר חדשות במצב מקופל ואז לפתוח למסך המלא — ההבדל בנוחות הקריאה מדבר בעד עצמו." />
     </Section>
@@ -355,17 +297,10 @@ function FoldBatterySection() {
   const percentRef = useRef<HTMLDivElement>(null)
   const cardRef = useRef<HTMLDivElement>(null)
   const [reduceMotion, setReduceMotion] = useState(false)
-  const [isCompact, setIsCompact] = useState(() => typeof window !== 'undefined' && window.innerWidth < 860)
+  const isCompact = useIsCompact(860)
 
   useEffect(() => {
     setReduceMotion(window.matchMedia('(prefers-reduced-motion: reduce)').matches)
-  }, [])
-
-  useEffect(() => {
-    const onResize = () => setIsCompact(window.innerWidth < 860)
-    onResize()
-    window.addEventListener('resize', onResize)
-    return () => window.removeEventListener('resize', onResize)
   }, [])
 
   useEffect(() => {

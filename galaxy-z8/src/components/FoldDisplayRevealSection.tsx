@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
-import { Video } from 'lucide-react'
 import { CountUpSpan } from './CountUpSpan'
-import { FeatureCard, MediaPlaceholder } from './SectionKit'
+import { FeatureCard, useIsCompact } from './SectionKit'
 import FoldDisplayMobileSection from './FoldDisplayMobileSection'
+import foldDisplayImg from '../assets/Fold/ChatGPT Image Jul 22, 2026, 02_10_56 AM.png'
 
 /* Ported 1:1 (mechanism/layout/type) from Ultra's DisplayRevealSection —
    a fixed 1920x1080 "stage" scaled uniformly to fit the viewport, with a
@@ -71,7 +71,7 @@ export const VIDEO_EXPERIENCE_CARD = (
       'צפייה בסרטונים קצרים וטרנדיים במסך החיצוני, עם תצוגה מלאה וסוחפת',
       'חוויית צפייה קולנועית במסך הראשי בעת צפייה בסרטים וסדרות בסטרימינג',
     ]}
-    media={<MediaPlaceholder label="וידאו: מעבר בין מסך חיצוני למסך פנימי" />}
+    media={<img src={foldDisplayImg} alt="" style={{ display: 'block', width: '100%', borderRadius: 18, objectFit: 'cover' }} />}
     tip="הראו ללקוח את אותו הסרטון פעם במסך החיצוני ופעם במסך הפתוח — ההבדל בחוויה מדבר בעד עצמו."
   />
 )
@@ -108,14 +108,11 @@ export default function FoldDisplayRevealSection() {
   const rafRef = useRef<number>(0)
   const [phase, setPhase] = useState(0)
   const phaseRef = useRef(0)
-  const [isCompact, setIsCompact] = useState(() => typeof window !== 'undefined' && window.innerWidth < 860)
+  const isCompact = useIsCompact(860)
   const [reduceMotion, setReduceMotion] = useState(false)
 
   useEffect(() => {
     setReduceMotion(window.matchMedia('(prefers-reduced-motion: reduce)').matches)
-    const onResize = () => setIsCompact(window.innerWidth < 860)
-    window.addEventListener('resize', onResize)
-    return () => window.removeEventListener('resize', onResize)
   }, [])
 
   useEffect(() => {
@@ -195,19 +192,19 @@ export default function FoldDisplayRevealSection() {
           }}
         >
           <div style={{ position: 'relative', width: '100%', maxWidth: '630px' }}>
-            <div
-              className="fold-media-slot"
+            <img
+              src={foldDisplayImg}
+              alt=""
+              aria-hidden="true"
               style={{
+                display: 'block',
                 width: '100%',
                 aspectRatio: '3 / 2',
                 borderRadius: '18px',
+                objectFit: 'cover',
                 filter: 'drop-shadow(0 24px 48px rgba(0,0,0,0.5))',
               }}
-              aria-hidden="true"
-            >
-              <Video size={26} strokeWidth={1.5} />
-              <span>וידאו: תצוגה</span>
-            </div>
+            />
           </div>
 
           {SLIDES.map((slide, i) => (
@@ -365,20 +362,20 @@ export default function FoldDisplayRevealSection() {
                 willChange: 'transform',
               }}
             >
-              <div
-                className="fold-media-slot"
+              <img
+                src={foldDisplayImg}
+                alt=""
+                aria-hidden="true"
                 style={{
+                  display: 'block',
                   position: 'relative',
                   width: '100%',
                   aspectRatio: '16 / 9',
                   borderRadius: '28px',
+                  objectFit: 'cover',
                   filter: 'drop-shadow(0 40px 80px rgba(0,0,0,0.55))',
                 }}
-                aria-hidden="true"
-              >
-                <Video size={32} strokeWidth={1.5} />
-                <span>וידאו: תצוגה</span>
-              </div>
+              />
             </div>
 
             {/* Text column — two slides stacked in the same spot, crossfading

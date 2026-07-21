@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { CountUpSpan } from './CountUpSpan'
+import { useIsCompact } from './SectionKit'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -36,17 +37,10 @@ export default function BatterySection() {
   // the same sticky-scrub-ring + fitted-card mobile layout the rest of the
   // mobile work uses; the scroll-driven fill/card/flash logic itself is
   // unchanged and untouched (same refs, same fractions, either layout).
-  const [isCompact, setIsCompact] = useState(() => typeof window !== 'undefined' && window.innerWidth < 860)
+  const isCompact = useIsCompact(860)
 
   useEffect(() => {
     setReduceMotion(window.matchMedia('(prefers-reduced-motion: reduce)').matches)
-  }, [])
-
-  useEffect(() => {
-    const onResize = () => setIsCompact(window.innerWidth < 860)
-    onResize()
-    window.addEventListener('resize', onResize)
-    return () => window.removeEventListener('resize', onResize)
   }, [])
 
   useEffect(() => {

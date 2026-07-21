@@ -66,55 +66,11 @@ function TagsRow({ tags }: { tags: string[] }) {
   )
 }
 
-/* Card 1 — Follow Cam. Markup/classes lifted as-is from the old GalaxyAiTabs
-   tab body (minus the tab switcher, since progression is scroll-driven now). */
-export function FollowCamCard() {
-  const d = FOLLOWCAM_DATA
-  return (
-    <div className="ultra-galaxyai-stack__inner">
-      <div className="followcam__header">
-        <div className="followcam__intro">
-          <h2 className="followcam__title" dir="ltr">{d.title}</h2>
-          <p className="followcam__subtitle">{d.subtitle}</p>
-          <TagsRow tags={d.tags} />
-          <p className="followcam__desc">{d.desc}</p>
-          <div className="followcam__block">
-            <div className="followcam__label">שלבי ההדגמה במכשיר</div>
-            <div className="followcam__steps">
-              {d.steps.map((step, i) => (
-                <div className="followcam__step" key={step}>
-                  <span className="followcam__step-index" dir="ltr">{i + 1}</span>
-                  <span className="followcam__step-text">{step}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-        <div className="followcam__media-col">
-          <div className="followcam__media">
-            <video src={d.video} autoPlay loop muted playsInline />
-          </div>
-          <div className="followcam__block followcam__block--examples">
-            <div className="followcam__label">דוגמאות לשימוש</div>
-            <div className="followcam__examples">
-              {d.examples.map((example) => (
-                <div className="followcam__example" key={example}>{example}</div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-      <SalesTip text={d.tip} />
-    </div>
-  )
-}
-
-/* Card 2 — smart photo editing (Photo Assist). Same followcam__* markup as
-   Follow Cam below (same card size, colors, type, and layout positions) —
-   just no subtitle row, since this feature has no such copy. Rendered by
-   CameraFrameSection, which drives the entrance/crossfade timing. */
-export function PhotoAssistCard({ sectionName }: { sectionName?: string } = {}) {
-  const d = PHOTO_ASSIST_DATA
+/* Desktop AI-feature card — shared by Follow Cam and Photo Assist (they were
+   two near-identical copies of this exact markup, differing only by an
+   optional subtitle and sectionName). Rendered by CameraFrameSection/
+   FoldCameraFrameSection, which drive the entrance/crossfade timing. */
+export function GalaxyAiDesktopCard({ data, sectionName }: { data: GalaxyAiCardData; sectionName?: string }) {
   return (
     <div className="ultra-galaxyai-stack__inner">
       <div className="followcam__header">
@@ -124,13 +80,14 @@ export function PhotoAssistCard({ sectionName }: { sectionName?: string } = {}) 
               <Eyebrow>{sectionName}</Eyebrow>
             </div>
           )}
-          <h2 className="followcam__title" dir="ltr">{d.title}</h2>
-          <TagsRow tags={d.tags} />
-          <p className="followcam__desc">{d.desc}</p>
+          <h2 className="followcam__title" dir="ltr">{data.title}</h2>
+          {data.subtitle && <p className="followcam__subtitle">{data.subtitle}</p>}
+          <TagsRow tags={data.tags} />
+          <p className="followcam__desc">{data.desc}</p>
           <div className="followcam__block">
             <div className="followcam__label">שלבי ההדגמה במכשיר</div>
             <div className="followcam__steps">
-              {d.steps.map((step, i) => (
+              {data.steps.map((step, i) => (
                 <div className="followcam__step" key={step}>
                   <span className="followcam__step-index" dir="ltr">{i + 1}</span>
                   <span className="followcam__step-text">{step}</span>
@@ -141,19 +98,19 @@ export function PhotoAssistCard({ sectionName }: { sectionName?: string } = {}) 
         </div>
         <div className="followcam__media-col">
           <div className="followcam__media">
-            <video src={d.video} autoPlay loop muted playsInline />
+            <video src={data.video} autoPlay loop muted playsInline />
           </div>
           <div className="followcam__block followcam__block--examples">
             <div className="followcam__label">דוגמאות לשימוש</div>
             <div className="followcam__examples">
-              {d.examples.map((example) => (
+              {data.examples.map((example) => (
                 <div className="followcam__example" key={example}>{example}</div>
               ))}
             </div>
           </div>
         </div>
       </div>
-      <SalesTip text={d.tip} />
+      <SalesTip text={data.tip} />
     </div>
   )
 }
@@ -173,8 +130,8 @@ export function GalaxyAiMobileCard({
   sheetRef,
 }: {
   data: GalaxyAiCardData
-  scrimRef: React.RefObject<HTMLDivElement | null>
-  sheetRef: React.RefObject<HTMLDivElement | null>
+  scrimRef: React.RefObject<HTMLDivElement>
+  sheetRef: React.RefObject<HTMLDivElement>
 }) {
   return (
     <div className="ultra-galaxyai-mobile" dir="rtl">

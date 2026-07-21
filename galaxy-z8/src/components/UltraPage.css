@@ -304,6 +304,34 @@
   border-radius: 0;
 }
 
+/* ---------- Media placeholder — reserves the spot for real assets.
+   Shared by every device page (SectionKit.tsx's <MediaPlaceholder>
+   hardcodes this exact class name regardless of which page renders it) —
+   used to live duplicated per-page as .fold-media-slot/.flip-media-slot,
+   but only the Fold copy was ever actually applied (the component never
+   used the Flip-prefixed name), so it's consolidated here instead. ---------- */
+.fold-media-slot {
+  position: relative;
+  aspect-ratio: 6 / 5;
+  border-radius: 18px;
+  border: 1px dashed var(--ultra-line);
+  background: var(--subtle-gray-light);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--ultra-graphite);
+  text-align: center;
+  padding: 24px;
+}
+.fold-media-slot span {
+  font-family: var(--ultra-mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  max-width: 22ch;
+}
+
 /* ---------- Shared mobile/tablet card utilities (opt-in via MainLayer's
    mobileCard/pinned props and FeatureCard's sectionName/pinned props) —
    used by any page's device components, not just one. Every page opts in

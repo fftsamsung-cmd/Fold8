@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { PhotoAssistCard, FollowCamCard, GalaxyAiMobileCard, FOLLOWCAM_DATA, PHOTO_ASSIST_DATA } from './GalaxyAiStackSection'
+import { GalaxyAiDesktopCard, GalaxyAiMobileCard, FOLLOWCAM_DATA, PHOTO_ASSIST_DATA } from './GalaxyAiStackSection'
+import { useIsCompact } from './SectionKit'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -142,8 +143,6 @@ const COMPACT_CARD2_EXAMPLES_ENTER = 0.92
 
 const clamp01 = (v: number) => Math.min(Math.max(v, 0), 1)
 
-const isCompactWidth = () => typeof window !== 'undefined' && window.innerWidth < 860
-
 /* Camera-module exploded-parts frame sequence, scrubbed directly by scroll
    progress via a real GSAP ScrollTrigger (frame count tweened 0 → last,
    scrubbed to scroll position), with a Samsung-style specs/steps overlay
@@ -159,7 +158,11 @@ export default function CameraFrameSection() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const imagesRef = useRef<(HTMLCanvasElement | null)[]>(Array(TOTAL_FRAMES).fill(null))
   const [ready, setReady] = useState(false)
-  const [isCompact, setIsCompact] = useState(isCompactWidth)
+  const isCompact = useIsCompact(860)
+  // This exploded-parts sequence is ~47MB of PNGs — deferring the preload
+  // loop below until the section is actually near the viewport means a
+  // visitor who never scrolls this far never downloads it.
+  const [nearViewport, setNearViewport] = useState(false)
 
   const titleRef = useRef<HTMLDivElement>(null)
   const subtitleRef = useRef<HTMLDivElement>(null)
@@ -189,12 +192,26 @@ export default function CameraFrameSection() {
   const compactCard2SheetRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const onResize = () => setIsCompact(isCompactWidth())
-    window.addEventListener('resize', onResize)
-    return () => window.removeEventListener('resize', onResize)
+    const wrapper = wrapperRef.current
+    if (!wrapper || typeof IntersectionObserver === 'undefined') {
+      setNearViewport(true)
+      return
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setNearViewport(true)
+          observer.disconnect()
+        }
+      },
+      { rootMargin: '600px 0px' }
+    )
+    observer.observe(wrapper)
+    return () => observer.disconnect()
   }, [])
 
   useEffect(() => {
+    if (!nearViewport) return
     const canvas = canvasRef.current
     const wrapper = wrapperRef.current
     if (!canvas || !wrapper) return
@@ -257,7 +274,7 @@ export default function CameraFrameSection() {
 
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
-    const revealEls: [Element | null, readonly [number, number]][] = [
+    const revealEls: [HTMLElement | SVGSVGElement | null, readonly [number, number]][] = [
       [titleRef.current, REVEAL_BANDS.title],
       [subtitleRef.current, REVEAL_BANDS.subtitle],
       [connectorsRef.current, REVEAL_BANDS.connectors],
@@ -404,7 +421,7 @@ export default function CameraFrameSection() {
       window.removeEventListener('resize', updatePaths)
       ctxGsap.revert()
     }
-  }, [isCompact])
+  }, [isCompact, nearViewport])
 
   const cameraVisual = (
     <div style={{ position: 'relative', maxHeight: '70vh', maxWidth: '76vw' }}>
@@ -849,14 +866,14 @@ export default function CameraFrameSection() {
           ref={firstCardRef}
           style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2, opacity: 0 }}
         >
-          <FollowCamCard />
+          <GalaxyAiDesktopCard data={FOLLOWCAM_DATA} />
         </div>
 
         <div
           ref={secondCardRef}
           style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3, opacity: 0 }}
         >
-          <PhotoAssistCard />
+          <GalaxyAiDesktopCard data={PHOTO_ASSIST_DATA} />
         </div>
 
         

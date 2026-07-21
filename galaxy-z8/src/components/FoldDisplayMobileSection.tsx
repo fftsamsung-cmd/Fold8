@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
-import { Video } from 'lucide-react'
 import { CountUpSpan } from './CountUpSpan'
 import { SLIDES } from './FoldDisplayRevealSection'
+import foldDisplayImg from '../assets/Fold/ChatGPT Image Jul 22, 2026, 02_10_56 AM.png'
 
 /* Mobile-only (<860px) sticky version of the Display section — same
    single-sticky-screen-crossfades-in-place technique as
@@ -87,20 +87,21 @@ export default function FoldDisplayMobileSection() {
           }}
         >
           <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '76px 20px 20px' }}>
-            <div
-              className="fold-media-slot"
+            <img
+              src={foldDisplayImg}
+              alt=""
               aria-hidden="true"
               style={{
+                display: 'block',
                 width: '78%',
                 maxWidth: 320,
                 aspectRatio: '3 / 2',
                 margin: '0 auto 26px',
+                borderRadius: 18,
+                objectFit: 'cover',
                 filter: 'drop-shadow(0 24px 48px rgba(0,0,0,0.5))',
               }}
-            >
-              <Video size={26} strokeWidth={1.5} />
-              <span>וידאו: תצוגה</span>
-            </div>
+            />
 
             {/* Both slides occupy the same reserved box — same "two slides
                 stacked in the same spot" pattern the desktop stage uses —

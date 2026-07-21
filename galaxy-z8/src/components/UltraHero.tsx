@@ -1,13 +1,13 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import videoUrl from '../assets/Ultra/hf_20260718_122507_9e21e272-e2d2-4422-8958-4a2f5c681646.mp4'
 import heroMobileVideoUrl from '../assets/Ultra/hf_20260718_121315_80b2c3ec-0ba6-4405-a4c8-ded171b172d1.mp4'
+import { useIsCompact } from './SectionKit'
 import './UltraHero.css'
 
 gsap.registerPlugin(ScrollTrigger)
 
-const isCompactWidth = () => typeof window !== 'undefined' && window.innerWidth < 860
 const clamp01 = (v: number) => Math.min(Math.max(v, 0), 1)
 
 /* Hero reveal bands, as fractions of the hero phase's own local progress
@@ -154,13 +154,14 @@ export default function UltraHero() {
   const videoWrapRef = useRef<HTMLDivElement>(null)
   const textRef = useRef<HTMLDivElement>(null)
   const compactContentRef = useRef<HTMLDivElement>(null)
-  const [isCompact, setIsCompact] = useState(isCompactWidth)
-
-  useEffect(() => {
-    const onResize = () => setIsCompact(isCompactWidth())
-    window.addEventListener('resize', onResize)
-    return () => window.removeEventListener('resize', onResize)
-  }, [])
+  // The mini "recap" video below plays the same footage as the full-bleed
+  // background video above — both decoding continuously from mount would
+  // double the decode/battery cost for content that's invisible most of the
+  // time (compactContentRef sits at opacity:0 until contentEnterT rises).
+  // Paused until its own layer is about to become visible, then playing
+  // only while it's actually shown.
+  const miniVideoRef = useRef<HTMLVideoElement>(null)
+  const isCompact = useIsCompact(860)
 
   useEffect(() => {
     if (isCompact) {
@@ -191,6 +192,11 @@ export default function UltraHero() {
           compactContentRef.current.style.opacity = String(contentEnterT)
           compactContentRef.current.style.transform = reduceMotion ? 'none' : `translateY(${(1 - contentEnterT) * 20}px)`
           compactContentRef.current.style.pointerEvents = contentEnterT > 0.5 ? 'auto' : 'none'
+        }
+        const mini = miniVideoRef.current
+        if (mini) {
+          if (contentEnterT > 0 && mini.paused) mini.play().catch(() => {})
+          else if (contentEnterT === 0 && !mini.paused) mini.pause()
         }
       }
 
@@ -328,8 +334,8 @@ export default function UltraHero() {
                   window (not resizing the window itself) brings the
                   hands+phone into view instead. */}
               <video
+                ref={miniVideoRef}
                 src={heroMobileVideoUrl}
-                autoPlay
                 muted
                 loop
                 playsInline
