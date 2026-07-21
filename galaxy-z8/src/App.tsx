@@ -8,7 +8,6 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 // assets (see Task C's performance pass) — lazy-loading per route means
 // visiting one device page no longer downloads the other two pages' JS
 // (GSAP timelines, section components, etc.) upfront.
-const LandingPage = lazy(() => import('./pages/LandingPage'))
 const Fold8Page = lazy(() => import('./pages/Fold8Page'))
 const Flip8Page = lazy(() => import('./pages/Flip8Page'))
 const Fold8UltraPage = lazy(() => import('./pages/Fold8UltraPage'))
@@ -54,7 +53,7 @@ export default function App() {
       <ScrollToTop />
       <Suspense fallback={null}>
         <Routes>
-          <Route path="/" element={<LandingPage />} />
+          <Route path="/" element={<Fold8UltraPage />} />
           <Route path="/fold8" element={<Fold8Page />} />
           <Route path="/flip8" element={<Flip8Page />} />
           <Route path="/fold8-ultra" element={<Fold8UltraPage />} />
