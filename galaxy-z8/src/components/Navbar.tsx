@@ -24,8 +24,8 @@ const DEVICE_LINKS = [
 
 export default function Navbar({ sections }: { sections?: SectionLink[] }) {
   const location = useLocation()
-  const deviceMode = location.pathname !== '/'
-  const hasSections = deviceMode && Boolean(sections && sections.length)
+  const hasSections = Boolean(sections && sections.length)
+  const deviceMode = hasSections
 
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
