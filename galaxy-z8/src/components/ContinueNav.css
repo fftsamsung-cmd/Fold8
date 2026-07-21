@@ -1,0 +1,53 @@
+.ultra-continue-btn {
+  position: fixed;
+  bottom: 32px;
+  z-index: 999;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: var(--samsung-black);
+  font-family: var(--font-primary);
+  font-size: 14px;
+  font-weight: 500;
+  padding: 12px 24px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  transition: background 250ms ease, border-color 250ms ease, transform 200ms ease;
+  cursor: pointer;
+}
+.ultra-continue-btn:hover {
+  background: #fff;
+  border-color: rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
+}
+.ultra-continue-btn--next { left: 32px; }
+.ultra-continue-btn--back { right: 32px; }
+
+@media (max-width: 640px) {
+  .ultra-continue-btn {
+    bottom: 20px;
+    padding: 10px 18px;
+    font-size: 13px;
+  }
+  .ultra-continue-btn--next { left: 16px; }
+  .ultra-continue-btn--back { right: 16px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ultra-continue-btn { transition: none; }
+  .ultra-continue-btn:hover { transform: none; }
+}
+
+/* Mobile/tablet: hidden across all three device pages — the fixed
+   next/back pills fight for space with the sticky cinematic sections
+   (Design/Cameras/FlexWindow) and their own scroll-driven progress, and
+   normal swipe-scroll already covers navigation at this breakpoint. */
+@media (max-width: 860px) {
+  .ultra-continue-btn {
+    display: none;
+  }
+}

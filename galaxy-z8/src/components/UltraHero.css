@@ -1,0 +1,128 @@
+/* Tall section creates scroll space for the sticky animation */
+.ultra-hero-fx {
+  position: relative;
+  height: 300vh;
+  color: var(--samsung-white);
+}
+
+/* Sticky viewport — stays in place while section scrolls. Solid dark fill
+   so the Multitasking text (white, on the desktop merged timeline) stays
+   legible once the video shrinks away from covering the full viewport —
+   without this it's transparent and falls back to the page's white bg. */
+.ultra-hero-fx__sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+  background: #050506;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Video fullscreen background */
+.ultra-hero-fx__video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+/* Dark overlay — starts transparent, GSAP animates to 0.82 */
+.ultra-hero-fx__overlay {
+  position: absolute;
+  inset: 0;
+  background: var(--dark-bg);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Content layer on top of overlay */
+.ultra-hero-fx__inner {
+  position: relative;
+  z-index: 2;
+  max-width: 1280px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 var(--sp-4);
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ultra-hero-fx__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-3);
+  max-width: 640px;
+  text-align: center;
+}
+
+.ultra-hero-fx__eyebrow {
+  display: inline-block;
+  white-space: nowrap;
+  font-family: var(--font-primary);
+  font-size: clamp(28px, 6vw, 72px);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--samsung-white);
+}
+
+/* Scroll indicator */
+.ultra-hero-fx__scroll-indicator {
+  position: absolute;
+  left: 50%;
+  bottom: var(--sp-6);
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  z-index: 2;
+}
+
+.ultra-hero-fx__scroll-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.ultra-hero-fx__scroll-line {
+  position: relative;
+  width: 1px;
+  height: 48px;
+  background: rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+}
+
+.ultra-hero-fx__scroll-dot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 16px;
+  background: rgba(255, 255, 255, 0.7);
+  animation: ultraHeroScrollTravel 1.6s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+@keyframes ultraHeroScrollTravel {
+  0%   { transform: translateY(-16px); opacity: 0; }
+  20%  { opacity: 1; }
+  80%  { opacity: 1; }
+  100% { transform: translateY(48px); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ultra-hero-fx__scroll-dot { animation: none; opacity: 0.4; }
+}
+
+@media (max-width: 768px) {
+  .ultra-hero-fx__inner {
+    padding-top: calc(80px + var(--sp-8));
+  }
+}

@@ -1,0 +1,272 @@
+.devices {
+  background: var(--subtle-gray-light);
+  padding: var(--sp-15) var(--sp-4);
+}
+
+.devices__inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-10);
+}
+
+.devices__header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.devices__headline {
+  font-size: var(--font-section);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: var(--samsung-black);
+}
+
+.devices__sub {
+  font-size: 17px;
+  color: var(--caption-color);
+}
+
+/* Grid: 2 equal + 1 featured larger */
+.devices__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.2fr;
+  gap: var(--sp-6);
+  align-items: stretch;
+}
+
+.device-card-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.device-card-link {
+  display: block;
+  text-decoration: none;
+}
+
+.spotlight-card {
+  position: relative;
+  background: var(--samsung-white);
+  border-radius: var(--radius-card);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  padding: var(--sp-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  overflow: hidden;
+  min-height: 480px;
+  transition: transform 280ms ease, box-shadow 280ms ease;
+}
+
+.spotlight-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.08);
+}
+
+.spotlight-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  border-radius: inherit;
+}
+
+.spotlight-border {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  padding: 2px;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+.spotlight-card > *:not(.spotlight-glow):not(.spotlight-border) {
+  position: relative;
+  z-index: 1;
+}
+
+.device-card {
+  /* kept for GSAP selector */
+}
+
+/* Badge */
+.device-card__header {
+  display: flex;
+  justify-content: flex-start;
+  height: 28px;
+  align-items: flex-start;
+  flex-shrink: 0;
+}
+
+.device-card__badge {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 2px;
+}
+
+.device-card__badge--blue {
+  background: var(--samsung-blue);
+  color: var(--samsung-white);
+}
+
+.device-card__badge--light {
+  background: rgba(20, 40, 160, 0.08);
+  color: var(--samsung-blue);
+}
+
+.device-card__badge--dark {
+  background: rgba(0,0,0,0.08);
+  color: rgba(0,0,0,0.75);
+  border: 1px solid rgba(0,0,0,0.15);
+}
+
+/* Visual */
+.device-card__visual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 240px;
+  flex-shrink: 0;
+}
+
+.device-svg {
+  height: 180px;
+  width: auto;
+  transition: transform 400ms ease;
+}
+
+.device-card:hover .device-svg {
+  transform: translateY(-4px) scale(1.03);
+}
+
+.device-card--featured .device-svg {
+  height: 210px;
+}
+
+.device-img {
+  height: 260px;
+  width: 100%;
+  object-fit: contain;
+  transition: transform 400ms ease;
+}
+
+.device-card--ultra .device-img {
+  height: 280px;
+}
+
+.device-card:hover .device-img {
+  transform: translateY(-4px) scale(1.03);
+}
+
+/* Info */
+.device-card__info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  border-top: 1px solid rgba(0,0,0,0.07);
+  padding-top: 12px;
+  margin-top: 4px;
+}
+
+.device-card__name {
+  font-size: 27px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--samsung-black);
+  text-transform: none;
+  text-align: center;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.device-card--featured .device-card__name {
+  color: var(--samsung-black);
+}
+
+.device-card__tagline {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  color: var(--samsung-black);
+}
+
+.device-card--featured .device-card__tagline {
+  color: var(--samsung-black);
+}
+
+.device-card__desc {
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--caption-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.device-card--featured .device-card__desc {
+  color: var(--caption-color);
+}
+
+.device-card__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--samsung-blue);
+  margin-top: auto;
+  align-self: flex-end;
+  font-weight: 700;
+  transition: gap 200ms ease;
+}
+
+.device-card--featured .device-card__cta {
+  color: var(--samsung-blue);
+}
+
+.device-card:hover .device-card__cta {
+  gap: 10px;
+}
+
+.device-card__arrow {
+  display: inline-block;
+  transition: transform 200ms ease;
+}
+
+.device-card:hover .device-card__arrow {
+  transform: translateX(-3px);
+}
+
+/* Mobile */
+@media (max-width: 900px) {
+  .devices__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 900px) {
+  .devices__grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .device-card--featured {
+    grid-column: 1 / -1;
+  }
+}

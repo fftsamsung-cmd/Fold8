@@ -1,0 +1,85 @@
+/* The page chrome IS the unfolded device — content scrolls inside the screen,
+   like the reference render: black frame, hinge notches top/bottom, camera
+   punch-hole top-right. */
+
+.device-shell {
+  background: #eef0f2;
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(90px, 10vh, 130px) clamp(16px, 4vw, 48px) clamp(32px, 5vh, 56px);
+}
+
+.device-frame {
+  position: relative;
+  width: min(760px, 92vw, calc((100dvh - 150px) * 0.8889));
+  aspect-ratio: 2000 / 2250;
+  background: #0b0b0c;
+  border-radius: clamp(26px, 3.6vw, 46px);
+  padding: clamp(9px, 1.3vw, 16px);
+  box-shadow: 0 50px 110px rgba(0, 0, 0, 0.22), 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.device-frame__hinge {
+  position: absolute;
+  left: 50%;
+  width: clamp(48px, 7vw, 76px);
+  height: clamp(7px, 0.9vw, 10px);
+  margin-left: calc(clamp(48px, 7vw, 76px) / -2);
+  background: #050505;
+  border-radius: 0 0 8px 8px;
+  z-index: 2;
+}
+.device-frame__hinge--top { top: 0; }
+.device-frame__hinge--bottom { bottom: 0; border-radius: 8px 8px 0 0; }
+
+.device-frame__btn {
+  position: absolute;
+  right: -2px;
+  width: 3px;
+  border-radius: 2px 0 0 2px;
+  background: #1c1c1e;
+  z-index: 2;
+}
+.device-frame__btn--vol { top: 30%; height: 8%; }
+.device-frame__btn--pwr { top: 40%; height: 10%; }
+
+.device-frame__screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: var(--samsung-white, #fff);
+  border-radius: clamp(18px, 2.6vw, 34px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.device-frame__camera {
+  position: absolute;
+  top: clamp(14px, 2vw, 22px);
+  right: clamp(20px, 3.4vw, 34px);
+  width: clamp(8px, 1vw, 11px);
+  height: clamp(8px, 1vw, 11px);
+  border-radius: 50%;
+  background: #000;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  z-index: 5;
+  pointer-events: none;
+}
+
+.device-frame__content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: none;
+  container-type: size;
+  container-name: device-screen;
+}
+.device-frame__content::-webkit-scrollbar { display: none; }
+
+@media (max-width: 560px) {
+  .device-shell { padding-top: clamp(74px, 9vh, 100px); }
+  .device-frame { width: min(94vw, calc((100dvh - 110px) * 0.8889)); }
+}

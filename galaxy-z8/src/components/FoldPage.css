@@ -1,0 +1,436 @@
+/* Reuses the exact same "ultra-*" / "followcam__*" global classes the Ultra
+   page's design system is built from (see UltraPage.css) — this block just
+   supplies the same custom-property contract .ultra does, with Fold8's own
+   light-purple accent instead of Ultra's dark eggplant. That's what lets
+   FoldPage.tsx reuse those classes (and shared components like SwipeStack's
+   DeviceMock or the followcam__* card pattern) verbatim. */
+.fold {
+  --ultra-graphite: #8c8c8c;
+  --ultra-purple: #a78bfa;
+  --ultra-paper: #f0f0f0;
+  --ultra-line: rgba(0, 0, 0, 0.1);
+  --ultra-ink: #5a5a5a;
+  --ultra-mono: var(--font-primary);
+  --bg-primary: var(--samsung-white);
+  --bg-secondary: var(--subtle-gray-light);
+  --text-secondary: var(--ultra-graphite);
+  --text-tertiary: var(--ultra-graphite);
+  --samsung-blue: var(--accent-color);
+
+  --fold-graphite: #8c8c8c;
+  --fold-purple: var(--accent-color);
+  --fold-paper: #f0f0f0;
+  --fold-line: rgba(0, 0, 0, 0.1);
+  --fold-ink: #5a5a5a;
+  --fold-mono: var(--font-primary);
+
+  position: relative;
+  background: var(--samsung-white);
+  color: var(--samsung-black);
+  overflow-x: clip;
+}
+
+.fold__section {
+  position: relative;
+  z-index: 1;
+  width: 100vw;
+  margin-inline: calc(50% - 50vw);
+  padding-inline: 0;
+  padding-block: clamp(64px, 9vw, 132px);
+  scroll-margin-top: 124px;
+  background: var(--samsung-white);
+}
+.fold__section:nth-of-type(even) {
+  background: var(--subtle-gray-light);
+}
+.fold__section > * {
+  position: relative;
+  max-width: 1280px;
+  margin-inline: auto;
+  padding-inline: clamp(24px, 6vw, 64px);
+}
+.fold__section + .fold__section {
+  border-top: 1px solid var(--fold-line);
+}
+
+.fold__number {
+  font-family: var(--fold-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--samsung-blue);
+  margin-bottom: 14px;
+}
+
+.fold__eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+  font-family: var(--fold-mono);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--samsung-blue);
+}
+.fold__eyebrow::before {
+  content: '';
+  width: 26px;
+  height: 1px;
+  background: var(--samsung-blue);
+}
+
+/* ---------- Highlights ---------- */
+.fold-highlights__carousel {
+  display: flex;
+  justify-content: center;
+  margin-top: clamp(48px, 8vw, 88px);
+}
+.fold-highlights__carousel .testimonial-container { padding: 0; }
+.fold-highlights__carousel .testimonial-image { border-radius: 20px; }
+
+/* ---------- Split (two sides) ---------- */
+.fold-split {
+  display: flex;
+  align-items: center;
+  gap: clamp(40px, 6vw, 96px);
+}
+.fold-split--reverse { flex-direction: row-reverse; }
+.fold-split__text { flex: 1.1; min-width: 0; }
+.fold-split__visual { flex: 0.9; min-width: 0; }
+
+@media (max-width: 560px) {
+  .fold-split,
+  .fold-split--reverse { flex-direction: column; }
+}
+
+.fold-headline {
+  font-size: clamp(30px, 4vw, 48px);
+  font-weight: 800;
+  letter-spacing: -0.015em;
+  line-height: 1.08;
+  margin-bottom: 22px;
+}
+.fold-body {
+  font-size: clamp(16px, 1.7vw, 19px);
+  line-height: 1.7;
+  color: var(--fold-ink);
+  max-width: 46ch;
+  margin-bottom: 36px;
+}
+
+.fold-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.fold-step {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+}
+.fold-step__index {
+  font-family: var(--fold-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--samsung-blue);
+  letter-spacing: 0.04em;
+}
+.fold-step__label {
+  font-size: clamp(15px, 1.6vw, 17px);
+  color: #2b2b2b;
+}
+
+/* ---------- Media placeholder — reserves the spot for real assets ---------- */
+.fold-media-slot {
+  position: relative;
+  aspect-ratio: 6 / 5;
+  border-radius: 18px;
+  border: 1px dashed var(--fold-line);
+  background: var(--subtle-gray-light);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--fold-graphite);
+  text-align: center;
+  padding: 24px;
+}
+.fold-media-slot span {
+  font-family: var(--fold-mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  max-width: 22ch;
+}
+
+/* device mock — two windows joined at the seam */
+.fold-mock {
+  position: relative;
+  aspect-ratio: 6 / 5;
+  display: flex;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid var(--fold-line);
+  background: var(--subtle-gray-light);
+}
+.fold-mock__pane {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  padding: 18px;
+  position: relative;
+}
+.fold-mock__pane:first-child { background: #ececec; }
+.fold-mock__pane:last-child { background: #f6f6f6; }
+.fold-mock__seam {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--galaxy-ai-gradient);
+  opacity: 0.7;
+}
+.fold-mock__tag {
+  font-family: var(--fold-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fold-graphite);
+}
+
+/* ---------- Stats ---------- */
+.fold-stats {
+  display: grid;
+  gap: clamp(28px, 4vw, 56px);
+}
+.fold-stats--3 { grid-template-columns: repeat(3, 1fr); }
+.fold-stats--2 { grid-template-columns: repeat(2, 1fr); }
+@media (max-width: 480px) {
+  .fold-stats--3, .fold-stats--2 { grid-template-columns: 1fr; }
+}
+.fold-stat { position: relative; }
+.fold-stat + .fold-stat {
+  border-inline-start: 1px solid var(--fold-line);
+  padding-inline-start: clamp(24px, 3vw, 40px);
+}
+.fold-stat__value {
+  font-family: var(--fold-mono);
+  font-size: clamp(48px, 8vw, 104px);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  margin-bottom: 14px;
+}
+.fold-stat__value sup {
+  font-size: 0.4em;
+  color: var(--fold-graphite);
+  margin-inline-start: 4px;
+  top: -0.4em;
+}
+.fold-stat__label {
+  font-size: clamp(17px, 1.8vw, 22px);
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.fold-stat__caption {
+  font-family: var(--fold-mono);
+  font-size: 13px;
+  color: var(--fold-graphite);
+}
+.fold-stats__note {
+  margin-top: 28px;
+  font-family: var(--fold-mono);
+  font-size: 13px;
+  color: var(--fold-graphite);
+  line-height: 1.7;
+}
+
+/* ---------- AI command chip ---------- */
+.fold-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.16);
+  border-radius: 999px;
+  padding: 12px 22px;
+  margin-bottom: 32px;
+  font-size: 16px;
+  color: var(--samsung-black);
+}
+.fold-chip::before {
+  content: '›';
+  font-family: var(--fold-mono);
+  color: var(--samsung-blue);
+}
+
+/* ---------- Attributes list ---------- */
+.fold-attrs {
+  display: flex;
+  flex-direction: column;
+}
+.fold-attr {
+  display: flex;
+  align-items: baseline;
+  gap: 18px;
+  padding: 22px 0;
+  border-top: 1px solid var(--fold-line);
+  font-size: clamp(18px, 2.2vw, 24px);
+  font-weight: 500;
+}
+.fold-attr:last-child { border-bottom: 1px solid var(--fold-line); }
+.fold-attr::before {
+  content: '—';
+  color: var(--samsung-blue);
+  font-family: var(--fold-mono);
+}
+
+/* ---------- Colors ---------- */
+.fold-colors {
+  display: flex;
+  justify-content: center;
+  gap: clamp(48px, 8vw, 120px);
+  flex-wrap: wrap;
+}
+.fold-color {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+.fold-color__swatch {
+  width: clamp(110px, 14vw, 160px);
+  height: clamp(110px, 14vw, 160px);
+  border-radius: 50%;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.16), inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+}
+.fold-color__name {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+/* ---------- Spec table ---------- */
+.fold-table {
+  display: flex;
+  flex-direction: column;
+}
+.fold-table__row {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 32px;
+  padding: 22px 0;
+  border-top: 1px solid var(--fold-line);
+}
+.fold-table__row:last-child { border-bottom: 1px solid var(--fold-line); }
+.fold-table__label {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--samsung-blue);
+  font-family: var(--fold-mono);
+}
+.fold-table__value {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--fold-ink);
+}
+@media (max-width: 460px) {
+  .fold-table__row { grid-template-columns: 1fr; gap: 6px; }
+}
+
+/* ============================================================
+   Responsive pass (mobile / tablet only — desktop untouched).
+   Same two fixes proven on Flip8's equivalent pass:
+   ============================================================ */
+@media (max-width: 860px) {
+  /* .ultra-split/.ultra-split--reverse (shared, UltraPage.css) only stack
+     below the site-wide 560px breakpoint — cramped two-column layout on
+     portrait tablets otherwise (Design/Colors here). Raise it to the same
+     860px threshold FeatureCard/CrossfadeStage already use. */
+  .fold .ultra-split,
+  .fold .ultra-split--reverse {
+    flex-direction: column;
+    gap: clamp(28px, 6vw, 40px);
+  }
+
+  /* .ultra-colors-visual's children (glow + phone-image layers) are all
+     position:absolute, so it has no in-flow content to size itself from.
+     .ultra-split's align-items:center (needed for the row layout on
+     desktop) becomes a cross-axis width constraint once flex-direction
+     flips to column above, and the visual collapses to width:0 — which
+     then clips the images themselves to 0 width too (global
+     `img { max-width: 100% }` resolves against that 0-width containing
+     block). Stretching it to the column's full width fixes that; pairing
+     it with the images' own 3:2 aspect ratio (all three Fold color photos
+     are 4500x3000 / 1536x1024, both exactly 3:2) gives the container a
+     real height too, instead of relying on the inline minHeight:340 floor
+     (which the images — sized by width here, unlike Flip's by-height
+     portrait shots — would otherwise overflow past, overlapping the
+     swatches below). */
+  .fold .ultra-colors-visual {
+    align-self: stretch;
+    aspect-ratio: 3 / 2;
+  }
+
+  /* Card content order, same arrangement as Flip8's pass: media/video →
+     section name → title → subtitle (desc) → content (tags/note/steps) →
+     examples → tip. Both .ultra-split and .followcam__header stay
+     display:flex at every width (only flex-direction toggles above), so
+     `order` alone is enough for the ultra-split ones — desktop's row
+     layout (where `order` has no visual effect since both sit side by
+     side already in source order) is untouched. */
+  .fold .ultra-split__visual {
+    order: 1;
+  }
+  .fold .ultra-split__text {
+    order: 2;
+  }
+
+  /* FeatureCard nests its content two levels deep (.followcam__intro /
+     .followcam__media-col, each with children of their own) — examples
+     lives inside media-col, so neither container's own box-level order is
+     granular enough to interleave it between content and tip. Unwrapping
+     both with display:contents (mobile-only) promotes every child to a
+     single flat, fully orderable set of flex items under
+     .followcam__header — desktop is untouched, where both stay normal
+     boxes and render exactly as before. */
+  .fold .followcam__media-col,
+  .fold .followcam__intro {
+    display: contents;
+  }
+  .fold .followcam__media {
+    order: 1;
+  }
+  .fold .followcam__intro > .ultra-mobile-only {
+    order: 2;
+  }
+  .fold .followcam__intro > .followcam__title {
+    order: 3;
+  }
+  .fold .followcam__intro > .followcam__desc {
+    order: 4;
+  }
+  .fold .followcam__intro > .followcam__tags,
+  .fold .followcam__intro > .followcam__note,
+  .fold .followcam__intro > .followcam__block {
+    order: 5;
+  }
+  .fold .followcam__block--examples {
+    order: 6;
+  }
+  .fold .followcam__intro > .ultra-sales-tip {
+    order: 7;
+  }
+}
+
+.fold__footer-mark {
+  text-align: center;
+  font-family: var(--fold-mono);
+  font-size: 12px;
+  letter-spacing: 0.3em;
+  color: var(--fold-graphite);
+  padding: 40px 0 80px;
+}

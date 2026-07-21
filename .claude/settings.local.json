@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(extract-text \"D:\\\\Galaxy Z Fold8 Ver1.pptx\")"
+    ]
+  }
+}
