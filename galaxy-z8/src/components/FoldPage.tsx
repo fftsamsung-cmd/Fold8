@@ -255,7 +255,7 @@ function FoldBatteryCardBody() {
         עם סוללה גדולה ומהירות טעינה גבוהה, ה-Z Fold8 מאפשר לכם ליהנות מהתוכן האהוב עליכם לאורך כל היום.
       </p>
       <div style={{ width: 36, height: 2, background: 'var(--accent-color)', marginBottom: 24 }} />
-      <div style={{ display: 'flex', gap: 'clamp(10px, 3.5vw, 32px)', marginBottom: 24, flexWrap: 'nowrap' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', gap: 'clamp(10px, 3.5vw, 32px)', marginBottom: 24, flexWrap: 'nowrap' }}>
         <div style={{ textAlign: 'center', minWidth: 0 }}>
           <div dir="ltr" style={{ fontFamily: 'var(--font-primary)', fontWeight: 800, fontSize: 'clamp(22px, 6vw, 40px)', lineHeight: 1, color: '#141414' }}>
             <CountUpSpan value={26} />
