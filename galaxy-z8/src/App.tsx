@@ -42,16 +42,16 @@ export default function App() {
     // which is why a few quick swipes in a row could fling straight past
     // every pinned/scrubbed section instead of settling into them. Only
     // switch touch handling over to Lenis on actual touch/coarse-pointer
-    // devices, tuned to settle faster: touchMultiplier softens how far a
-    // given swipe travels, and a lower touchInertiaExponent (Lenis raises
-    // the release velocity to this power to seed the post-release fling —
-    // default 1.7 amplifies it) shortens the fling distance instead of
-    // amplifying it. syncTouchLerp bumped up slightly so that shorter fling
-    // still settles snappily rather than trailing off slowly.
+    // devices. First pass (touchMultiplier 0.85 / touchInertiaExponent 1.2 /
+    // syncTouchLerp 0.1) came back too slow on a real device — these are
+    // the midpoint between that pass and Lenis's own syncTouch defaults
+    // (1 / 1.7 / 0.075, the closest quantifiable stand-in for "untouched
+    // native feel" here), landing halfway between the original fling and
+    // the over-damped fix.
     const isTouchDevice = window.matchMedia('(pointer: coarse)').matches
     const lenis = new Lenis(
       isTouchDevice
-        ? { syncTouch: true, touchMultiplier: 0.85, touchInertiaExponent: 1.2, syncTouchLerp: 0.1 }
+        ? { syncTouch: true, touchMultiplier: 0.925, touchInertiaExponent: 1.45, syncTouchLerp: 0.0875 }
         : undefined,
     )
     lenis.on('scroll', ScrollTrigger.update)
