@@ -37,7 +37,23 @@ export default function App() {
   // Highlights stacking cards) track the smoothed scroll exactly.
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-    const lenis = new Lenis()
+    // By default Lenis only smooths wheel scrolling — touch scrolling is
+    // left to the browser's native momentum untouched (syncTouch: false),
+    // which is why a few quick swipes in a row could fling straight past
+    // every pinned/scrubbed section instead of settling into them. Only
+    // switch touch handling over to Lenis on actual touch/coarse-pointer
+    // devices, tuned to settle faster: touchMultiplier softens how far a
+    // given swipe travels, and a lower touchInertiaExponent (Lenis raises
+    // the release velocity to this power to seed the post-release fling —
+    // default 1.7 amplifies it) shortens the fling distance instead of
+    // amplifying it. syncTouchLerp bumped up slightly so that shorter fling
+    // still settles snappily rather than trailing off slowly.
+    const isTouchDevice = window.matchMedia('(pointer: coarse)').matches
+    const lenis = new Lenis(
+      isTouchDevice
+        ? { syncTouch: true, touchMultiplier: 0.85, touchInertiaExponent: 1.2, syncTouchLerp: 0.1 }
+        : undefined,
+    )
     lenis.on('scroll', ScrollTrigger.update)
     const onTick = (time: number) => lenis.raf(time * 1000)
     gsap.ticker.add(onTick)

@@ -773,6 +773,19 @@
 }
 .ultra-galaxyai-mobile__header .followcam__tags {
   margin-bottom: 6px;
+  flex-wrap: nowrap;
+  gap: 5px;
+}
+.ultra-galaxyai-mobile__header .followcam__tags-label {
+  font-size: 10px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.ultra-galaxyai-mobile__header .followcam__tag {
+  font-size: 10px;
+  padding: 4px 9px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .ultra-galaxyai-mobile__header .followcam__desc {
   font-size: 13px;

@@ -255,24 +255,24 @@ function FoldBatteryCardBody() {
         עם סוללה גדולה ומהירות טעינה גבוהה, ה-Z Fold8 מאפשר לכם ליהנות מהתוכן האהוב עליכם לאורך כל היום.
       </p>
       <div style={{ width: 36, height: 2, background: 'var(--accent-color)', marginBottom: 24 }} />
-      <div style={{ display: 'flex', gap: 32, marginBottom: 24, flexWrap: 'wrap' }}>
-        <div style={{ textAlign: 'center' }}>
-          <div dir="ltr" style={{ fontFamily: 'var(--font-primary)', fontWeight: 800, fontSize: 'clamp(28px, 2.6vw, 40px)', lineHeight: 1, color: '#141414' }}>
+      <div style={{ display: 'flex', gap: 'clamp(10px, 3.5vw, 32px)', marginBottom: 24, flexWrap: 'nowrap' }}>
+        <div style={{ textAlign: 'center', minWidth: 0 }}>
+          <div dir="ltr" style={{ fontFamily: 'var(--font-primary)', fontWeight: 800, fontSize: 'clamp(22px, 6vw, 40px)', lineHeight: 1, color: '#141414' }}>
             <CountUpSpan value={26} />
           </div>
-          <div style={{ marginTop: 6, fontSize: 12, color: 'rgba(0,0,0,0.55)' }}>שעות ניגון וידאו</div>
+          <div style={{ marginTop: 6, fontSize: 'clamp(10px, 2.6vw, 12px)', color: 'rgba(0,0,0,0.55)' }}>שעות ניגון וידאו</div>
         </div>
-        <div style={{ textAlign: 'center' }}>
-          <div dir="ltr" style={{ fontFamily: 'var(--font-primary)', fontWeight: 800, fontSize: 'clamp(28px, 2.6vw, 40px)', lineHeight: 1, color: '#141414' }}>
+        <div style={{ textAlign: 'center', minWidth: 0, maxWidth: 90 }}>
+          <div dir="ltr" style={{ fontFamily: 'var(--font-primary)', fontWeight: 800, fontSize: 'clamp(22px, 6vw, 40px)', lineHeight: 1, color: '#141414' }}>
             <CountUpSpan value={45} />W
           </div>
-          <div style={{ marginTop: 6, fontSize: 12, color: 'rgba(0,0,0,0.55)' }}>טעינה מהירה במיוחד 2.0</div>
+          <div style={{ marginTop: 6, fontSize: 'clamp(10px, 2.6vw, 12px)', color: 'rgba(0,0,0,0.55)' }}>טעינה מהירה במיוחד 2.0</div>
         </div>
-        <div style={{ textAlign: 'center' }}>
-          <div dir="ltr" style={{ fontFamily: 'var(--font-primary)', fontWeight: 800, fontSize: 'clamp(28px, 2.6vw, 40px)', lineHeight: 1, color: '#141414' }}>
+        <div style={{ textAlign: 'center', minWidth: 0, maxWidth: 80 }}>
+          <div dir="ltr" style={{ fontFamily: 'var(--font-primary)', fontWeight: 800, fontSize: 'clamp(22px, 6vw, 40px)', lineHeight: 1, color: '#141414' }}>
             <CountUpSpan value={65} />%
           </div>
-          <div style={{ marginTop: 6, fontSize: 12, color: 'rgba(0,0,0,0.55)' }}>טעינה ב-30 דקות</div>
+          <div style={{ marginTop: 6, fontSize: 'clamp(10px, 2.6vw, 12px)', color: 'rgba(0,0,0,0.55)' }}>טעינה ב-30 דקות</div>
         </div>
       </div>
       <div style={{ fontSize: 13, color: 'rgba(0,0,0,0.5)', marginBottom: 22, lineHeight: 1.5 }}>
