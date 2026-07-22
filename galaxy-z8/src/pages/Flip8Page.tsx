@@ -1,6 +1,7 @@
 import Navbar from '../components/Navbar'
 import FlipPage from '../components/FlipPage'
 import ContinueNav from '../components/ContinueNav'
+import Footer from '../components/Footer'
 
 const FLIP_SECTIONS = [
   { id: 'design', label: 'עיצוב', number: '01', enLabel: 'DESIGN' },
@@ -16,6 +17,7 @@ export default function Flip8Page() {
       <Navbar sections={FLIP_SECTIONS} />
       <FlipPage />
       <ContinueNav sectionIds={FLIP_SECTIONS.map((s) => s.id)} />
+      <Footer />
     </main>
   )
 }

@@ -2,6 +2,7 @@ import Navbar from '../components/Navbar'
 import UltraHero from '../components/UltraHero'
 import UltraPage from '../components/UltraPage'
 import ContinueNav from '../components/ContinueNav'
+import Footer from '../components/Footer'
 
 const ULTRA_SECTIONS = [
   { id: 'multitasking', label: 'מולטיטסקינג', number: '01', enLabel: 'MULTITASKING' },
@@ -20,6 +21,7 @@ export default function Fold8UltraPage() {
       <UltraHero />
       <UltraPage />
       <ContinueNav />
+      <Footer />
     </main>
   )
 }

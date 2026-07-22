@@ -1,6 +1,7 @@
 import Navbar from '../components/Navbar'
 import FoldPage from '../components/FoldPage'
 import ContinueNav from '../components/ContinueNav'
+import Footer from '../components/Footer'
 
 const FOLD_SECTIONS = [
   { id: 'design', label: 'עיצוב', number: '01', enLabel: 'DESIGN' },
@@ -18,6 +19,7 @@ export default function Fold8Page() {
       <Navbar sections={FOLD_SECTIONS} />
       <FoldPage />
       <ContinueNav sectionIds={FOLD_SECTIONS.map((s) => s.id)} />
+      <Footer />
     </main>
   )
 }
