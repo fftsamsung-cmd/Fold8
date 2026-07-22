@@ -14,6 +14,48 @@ import './UltraPage.css'
 
 gsap.registerPlugin(ScrollTrigger)
 
+/* Full spec rows, shared between the main table and the "compare to a
+   previous model" drawer below it — the drawer diffs against this same
+   list by label, so it stays in sync with whatever the table displays. */
+const SPEC_ROWS = [
+  { label: 'תצוגה', value: 'ראשית 8.0” QXGA+, מסך חיצוני 6.5” FHD+, Dynamic AMOLED 2X, קצב רענון אדפטיבי 1-120Hz' },
+  { label: 'מצלמות אחוריות', value: 'מערך צילום בעל 3 עדשות, רחבה במיוחד 50MP (F2.2), ראשית 200MP (F1.7), טלפוטו 10MP (3x, F2.4)' },
+  { label: 'מצלמה קדמית', value: 'מסך פנימי 10MP (F2.2), מסך חיצוני 10MP (F2.2)' },
+  { label: 'מעבד', value: 'Snapdragon 8 Elite Gen 5 for Galaxy (3 nm)' },
+  { label: 'זיכרון ואחסון', value: '256/512GB 12GB Ram, 1TB 16GB Ram' },
+  { label: 'סוללה וטעינה', value: '5,000 mAh, טעינה מהירה במיוחד 45W 2.0, טעינה אלחוטית מהירה במיוחד 2.0' },
+  { label: 'מידות ומשקל', value: 'פתוח 4.1 x 158.4 x 143.2 מ"מ, מקופל 8.9 x 158.4 x 72.8 מ"מ, 214 גרם' },
+] as const
+
+type PreviousModelKey = '7' | '6'
+
+const PREVIOUS_MODELS: Record<PreviousModelKey, { name: string; values: Record<string, string> }> = {
+  '7': {
+    name: 'Fold7',
+    values: {
+      'תצוגה': '8.0" פנימית Dynamic AMOLED 2X, 2184x1968, 120Hz, 2600 nit | 6.5" חיצונית Dynamic AMOLED 2X, 2520x1080, 120Hz',
+      'מצלמות אחוריות': '200MP רחבה f/1.7 OIS | 12MP אולטרה-רחבה f/2.2 | 10MP טלה זום אופטי 3x f/2.4 OIS',
+      'מצלמה קדמית': '10MP f/2.2 במסך הראשי (זווית 100°) | 10MP f/2.2 במסך החיצוני',
+      'מעבד': 'Snapdragon 8 Elite for Galaxy (3nm), Octa-core',
+      'זיכרון ואחסון': '12/16GB RAM, 256/512/1024GB אחסון',
+      'סוללה וטעינה': '4,400 mAh, טעינה אלחוטית 25W, טעינה מהירה 2.0',
+      'מידות ומשקל': 'פתוח 158.4 x 143.2 x 4.2mm, מקופל 158.4 x 72.8 x 8.9mm, 215 גרם',
+    },
+  },
+  '6': {
+    name: 'Fold6',
+    values: {
+      'תצוגה': '7.6" פנימית Dynamic AMOLED 2X, 2160x1856, 120Hz | 6.3" חיצונית Dynamic AMOLED 2X, 2376x968, 120Hz',
+      'מצלמות אחוריות': '50MP רחבה f/1.8 OIS | 12MP אולטרה-רחבה f/2.2 | 10MP טלה זום אופטי 3x f/2.4 OIS',
+      'מצלמה קדמית': '4MP תת-מסך f/2.2 במסך הפנימי | 10MP f/2.2 במסך החיצוני',
+      'מעבד': 'Snapdragon 8 Gen 3 for Galaxy (4nm), Octa-core',
+      'זיכרון ואחסון': '12GB RAM, 256/512/1024GB אחסון',
+      'סוללה וטעינה': '4,400 mAh, טעינה מהירה 25W',
+      'מידות ומשקל': 'פתוח 132.6 x 153.5 x 5.6mm, מקופל 68.1 x 153.5 x 12.1mm, 239 גרם',
+    },
+  },
+}
+
 function useReveal<T extends HTMLElement>(disabled = false) {
   const ref = useRef<T>(null)
   useEffect(() => {
@@ -723,6 +765,9 @@ function DisplayRevealSection({
 }
 
 export default function UltraPage() {
+  const [compareModel, setCompareModel] = useState<PreviousModelKey>('7')
+  const compareRows = SPEC_ROWS.filter((row) => PREVIOUS_MODELS[compareModel].values[row.label] !== row.value)
+
   return (
     <div className="ultra" dir="rtl" lang="he">
       {/* Multitasking — now merged into UltraHero.tsx: the hero video shrinks
@@ -793,15 +838,7 @@ export default function UltraPage() {
           כשהמסך הגדול פוגש ביצועים ללא תחרות – ה-Galaxy Z Fold8 Ultra לוקח את הפרודוקטיביות וחוויית ה-AI שלכם צעד אחד קדימה.
         </p>
         <div className="ultra-table">
-          {[
-            { label: 'תצוגה', value: 'ראשית 8.0” QXGA+, מסך חיצוני 6.5” FHD+, Dynamic AMOLED 2X, קצב רענון אדפטיבי 1-120Hz' },
-            { label: 'מצלמות אחוריות', value: 'מערך צילום בעל 3 עדשות, רחבה במיוחד 50MP (F2.2), ראשית 200MP (F1.7), טלפוטו 10MP (3x, F2.4)' },
-            { label: 'מצלמה קדמית', value: 'מסך פנימי 10MP (F2.2), מסך חיצוני 10MP (F2.2)' },
-            { label: 'מעבד', value: 'Snapdragon 8 Elite Gen 5 for Galaxy (3 nm)' },
-            { label: 'זיכרון ואחסון', value: '256/512GB 12GB Ram, 1TB 16GB Ram' },
-            { label: 'סוללה וטעינה', value: '5,000 mAh, טעינה מהירה במיוחד 45W 2.0, טעינה אלחוטית מהירה במיוחד 2.0' },
-            { label: 'מידות ומשקל', value: 'פתוח 4.1 x 158.4 x 143.2 מ"מ, מקופל 8.9 x 158.4 x 72.8 מ"מ, 214 גרם' },
-          ].map((row) => (
+          {SPEC_ROWS.map((row) => (
             <div className="ultra-table__row" key={row.label}>
               <div className="ultra-table__label">{row.label}</div>
               <div className="ultra-table__value-wrap">
@@ -809,6 +846,41 @@ export default function UltraPage() {
               </div>
             </div>
           ))}
+        </div>
+
+        {/* Compare-to-previous-model drawer — tabs pick Fold7/Fold6, content
+            shows only the spec rows where that model's value differs from
+            the Ultra row above it (identical rows are omitted entirely). */}
+        <div className="ultra-compare">
+          <div className="ultra-compare__head">
+            <span className="ultra-compare__title">השוואה לדגם קודם</span>
+            <div className="ultra-compare__tabs" role="tablist" aria-label="בחירת דגם להשוואה">
+              {(Object.keys(PREVIOUS_MODELS) as PreviousModelKey[]).map((key) => (
+                <button
+                  key={key}
+                  type="button"
+                  role="tab"
+                  aria-selected={compareModel === key}
+                  className={`ultra-compare__tab${compareModel === key ? ' ultra-compare__tab--active' : ''}`}
+                  onClick={() => setCompareModel(key)}
+                >
+                  {PREVIOUS_MODELS[key].name}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="ultra-compare__panel" role="tabpanel">
+            {compareRows.length === 0 ? (
+              <div className="ultra-compare__empty">אין הבדל במפרט מול {PREVIOUS_MODELS[compareModel].name} בקטגוריות שלמעלה.</div>
+            ) : (
+              compareRows.map((row) => (
+                <div className="ultra-compare__row" key={row.label}>
+                  <span className="ultra-compare__label">{row.label}</span>
+                  <span className="ultra-table__diff">{PREVIOUS_MODELS[compareModel].name}: {PREVIOUS_MODELS[compareModel].values[row.label]}</span>
+                </div>
+              ))
+            )}
+          </div>
         </div>
       </Section>
 
