@@ -42,16 +42,19 @@ export default function App() {
     // which is why a few quick swipes in a row could fling straight past
     // every pinned/scrubbed section instead of settling into them. Only
     // switch touch handling over to Lenis on actual touch/coarse-pointer
-    // devices. First pass (touchMultiplier 0.85 / touchInertiaExponent 1.2 /
-    // syncTouchLerp 0.1) came back too slow on a real device — these are
-    // the midpoint between that pass and Lenis's own syncTouch defaults
-    // (1 / 1.7 / 0.075, the closest quantifiable stand-in for "untouched
-    // native feel" here), landing halfway between the original fling and
-    // the over-damped fix.
+    // devices. First pass (0.85 / 1.2 / 0.1) tested too slow; the halfway
+    // point toward Lenis's own syncTouch defaults (1 / 1.7 / 0.075, the
+    // closest quantifiable stand-in for "untouched native feel") still
+    // tested too slow. Nudged again, 3/4 of the way toward native this
+    // time — still slightly damped so a rapid-fire swipe run doesn't fully
+    // regress to the original complaint, but close enough to native that
+    // normal scrolling shouldn't read as sluggish. A proper fix (capping
+    // reveal speed per pinned section instead of blanket touch damping) is
+    // still the real follow-up once there's time to test it properly.
     const isTouchDevice = window.matchMedia('(pointer: coarse)').matches
     const lenis = new Lenis(
       isTouchDevice
-        ? { syncTouch: true, touchMultiplier: 0.925, touchInertiaExponent: 1.45, syncTouchLerp: 0.0875 }
+        ? { syncTouch: true, touchMultiplier: 0.9625, touchInertiaExponent: 1.575, syncTouchLerp: 0.08125 }
         : undefined,
     )
     lenis.on('scroll', ScrollTrigger.update)
