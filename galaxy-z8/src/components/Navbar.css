@@ -237,7 +237,7 @@
   font-size: 15px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.75);
-  text-align: start;
+  text-align: center;
   transition: background 160ms ease, color 160ms ease;
 }
 .navbar__menu-link:hover { background: rgba(255, 255, 255, 0.06); color: var(--samsung-white); }

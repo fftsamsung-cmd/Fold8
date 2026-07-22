@@ -18,8 +18,8 @@ export interface SectionLink {
 
 const DEVICE_LINKS = [
   { href: '/fold8', label: 'Galaxy Z Fold8' },
+  { href: '/fold8-ultra', label: 'Galaxy Z Fold8 Ultra' },
   { href: '/flip8', label: 'Galaxy Z Flip8' },
-  { href: '/fold8-ultra', label: 'Fold8 Ultra' },
 ]
 
 export default function Navbar({ sections }: { sections?: SectionLink[] }) {
@@ -98,23 +98,31 @@ export default function Navbar({ sections }: { sections?: SectionLink[] }) {
   // Scrollspy — which section has crossed the reference line under the bar.
   useEffect(() => {
     if (!hasSections || !sections) return
-    const elements = sections
-      .map((s) => document.getElementById(s.id))
-      .filter((el): el is HTMLElement => Boolean(el))
-    if (!elements.length) return
 
     const REFERENCE_LINE = 120
     let ticking = false
+    // Re-queries getElementById on every tick rather than caching each
+    // section's element once at mount — several sections (design/display/
+    // cameras/reading/battery on the Fold page) swap their entire DOM
+    // subtree when isCompact flips (mobile ⇄ desktop layout, e.g. on
+    // resize or a foldable unfolding). A cached reference to the old,
+    // now-detached node would report getBoundingClientRect().top as a
+    // permanent 0 (detached nodes always do), which always satisfies
+    // "<= REFERENCE_LINE" and made the scrollspy latch onto whichever
+    // stale section came last, regardless of actual scroll position.
     const update = () => {
       ticking = false
       let currentId = ''
-      for (let i = 0; i < elements.length; i++) {
-        if (elements[i].getBoundingClientRect().top <= REFERENCE_LINE) currentId = sections[i].id
+      for (const section of sections) {
+        const el = document.getElementById(section.id)
+        if (!el) continue
+        if (el.getBoundingClientRect().top <= REFERENCE_LINE) currentId = section.id
         else break
       }
       setActiveId(currentId)
       // Same threshold as the bar's own fade-in ScrollTrigger end ('top 45%').
-      setBarVisible(elements[0].getBoundingClientRect().top <= window.innerHeight * 0.45)
+      const firstEl = document.getElementById(sections[0].id)
+      setBarVisible(Boolean(firstEl && firstEl.getBoundingClientRect().top <= window.innerHeight * 0.45))
     }
     const onScroll = () => {
       if (ticking) return
@@ -243,7 +251,9 @@ export default function Navbar({ sections }: { sections?: SectionLink[] }) {
                   <Link
                     key={d.href}
                     to={d.href}
-                    className={`navbar__menu-link${location.pathname === d.href ? ' navbar__menu-link--current' : ''}`}
+                    // "/" is the site root and renders the same page as "/fold8" —
+                    // treat them as the same device for the "current" highlight.
+                    className={`navbar__menu-link${(location.pathname === d.href || (d.href === '/fold8' && location.pathname === '/')) ? ' navbar__menu-link--current' : ''}`}
                     role="menuitem"
                     tabIndex={menuOpen ? 0 : -1}
                   >

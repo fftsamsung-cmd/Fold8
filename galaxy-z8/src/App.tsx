@@ -72,7 +72,7 @@ export default function App() {
       <ScrollToTop />
       <Suspense fallback={null}>
         <Routes>
-          <Route path="/" element={<Fold8UltraPage />} />
+          <Route path="/" element={<Fold8Page />} />
           <Route path="/fold8" element={<Fold8Page />} />
           <Route path="/flip8" element={<Flip8Page />} />
           <Route path="/fold8-ultra" element={<Fold8UltraPage />} />
