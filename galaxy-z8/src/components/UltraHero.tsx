@@ -379,7 +379,7 @@ export default function UltraHero() {
 
         <div className="ultra-hero-fx__inner">
           <div className="ultra-hero-fx__content">
-            <h1 className="ultra-hero-fx__eyebrow" ref={eyebrowRef}>Z | FOLD 8 ULTRA</h1>
+            <h1 className="ultra-hero-fx__eyebrow" ref={eyebrowRef}>Galaxy Z Fold8 Ultra</h1>
           </div>
         </div>
 
