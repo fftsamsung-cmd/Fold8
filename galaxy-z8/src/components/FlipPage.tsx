@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import SalesTip from './SalesTip'
-import { Section, Eyebrow, Attrs, MediaPlaceholder, MainLayer, CrossfadeStage, FeatureCard, useIsCompact, useAutoAdvanceColors, ColorSwatchPicker } from './SectionKit'
+import { Section, Eyebrow, Attrs, MainLayer, CrossfadeStage, FeatureCard, useIsCompact, useAutoAdvanceColors, ColorSwatchPicker } from './SectionKit'
 import FlipDesignMobileSection from './FlipDesignMobileSection'
 import FlipCamerasMobileSection from './FlipCamerasMobileSection'
 import FlipFlexWindowMobileSection from './FlipFlexWindowMobileSection'
@@ -11,6 +11,7 @@ import colorWhite from '../assets/Flip/color-white-nobg.png'
 import superSteadyVideo from '../assets/Flip/צילום וידאו.mp4'
 import bokehVideo from '../assets/Flip/hf_20260720_150923_2bdc1e87-8b2e-4529-a20b-66f63471163e.mp4'
 import nightographyVideo from '../assets/Flip/hf_20260720_151454_4160d2f8-1e68-45d2-812b-b0d28348c34d.mp4'
+import oneHandOpenVideo from '../assets/Flip/SM-F776_ZFlip8_Pink.mp4'
 import galaxyAi1 from '../assets/Flip/galaxyai1-nobg.png'
 import coverScreen1 from '../assets/Flip/ChatGPT Image Jul 20, 2026, 05_21_40 PM.png'
 import coverScreen2 from '../assets/Flip/ChatGPT Image Jul 20, 2026, 05_22_52 PM.png'
@@ -277,7 +278,9 @@ function DesignSection() {
           title="חוויית נוחות מתקדמת"
           desc="עיצוב מסגרת בטכנולוגיה ייחודית לפתיחה קלה ולאחיזה טבעית ונוחה — קצוות מעוגלים לפתיחה חלקה, אחיזה בטוחה ויציבה המעניקה חופש תנועה וניידות מושלמת."
           examples={['לפתוח את המכשיר בנוחות ביד אחת, בדיוק כשהיד השנייה שלכם עסוקה']}
-          media={<MediaPlaceholder label="וידאו: פתיחת המכשיר ביד אחת" />}
+          media={(
+            <video src={oneHandOpenVideo} autoPlay loop muted playsInline style={{ display: 'block', width: '100%', aspectRatio: '16 / 9', objectFit: 'cover' }} />
+          )}
           tip="בקשו מהלקוח לפתוח את המכשיר ביד אחת בזמן שהיד השנייה 'עסוקה' — זו הדגמה שמדברת בעד עצמה."
           pinned
         />,
