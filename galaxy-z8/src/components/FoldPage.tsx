@@ -25,7 +25,7 @@ gsap.registerPlugin(ScrollTrigger)
    viewport-height, or they'd render far wider than the visual column and
    overflow into the text. */
 const FOLD_COLORS = [
-  { id: 'purple', name: 'סגול', hex: 'var(--accent-color)', glow: 'rgba(139,92,246,0.28)', image: colorPurpleImg },
+  { id: 'purple', name: 'לוונדר', hex: '#B497D6', glow: 'rgba(180,151,214,0.28)', image: colorPurpleImg },
   { id: 'black', name: 'שחור', hex: 'var(--samsung-black)', glow: 'rgba(0,0,0,0.18)', image: colorBlackImg },
   { id: 'white', name: 'לבן', hex: 'var(--ultra-paper)', glow: 'rgba(240,240,240,0.5)', image: colorWhiteImg },
 ] as const

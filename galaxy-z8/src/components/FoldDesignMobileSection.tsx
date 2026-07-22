@@ -19,7 +19,7 @@ import colorWhiteImg from '../assets/Fold/צבעים/צבע_לבן-removebg-prev
    when the OS asks for reduced motion (see DesignSection in FoldPage.tsx). */
 
 const FOLD_COLORS = [
-  { id: 'purple', name: 'סגול', hex: 'var(--accent-color)', glow: 'rgba(139,92,246,0.25)', image: colorPurpleImg },
+  { id: 'purple', name: 'לוונדר', hex: '#B497D6', glow: 'rgba(180,151,214,0.25)', image: colorPurpleImg },
   { id: 'black', name: 'שחור', hex: 'var(--samsung-black)', glow: 'rgba(0,0,0,0.14)', image: colorBlackImg },
   { id: 'white', name: 'לבן', hex: 'var(--ultra-paper)', glow: 'rgba(0,0,0,0.07)', image: colorWhiteImg },
 ] as const
