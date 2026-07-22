@@ -16,7 +16,7 @@ gsap.registerPlugin(ScrollTrigger)
 
 /* Full spec table, broken into per-clause segments instead of one string
    per row — each segment carries its own "differs from Fold7 / Fold6"
-   flags, hand-set from the real spec (not a runtime string-equality check,
+   info, hand-set from the real spec (not a runtime string-equality check,
    since this table's copy is phrased more tersely than the comparison
    sheets even when the underlying spec is identical — e.g. this row's
    "ראשית 8.0” QXGA+" and Fold7's "8.0" פנימית Dynamic AMOLED 2X, 2184x1968,
@@ -24,10 +24,19 @@ gsap.registerPlugin(ScrollTrigger)
    text is written so simply concatenating every segment in order
    reproduces the exact original row copy (each non-first segment includes
    its own leading ", "), so choosing a comparison model never changes the
-   wording — it only colors the clauses that actually changed. */
+   wording — it only colors the clauses that actually changed. `diff[key]`
+   is the OLD model's own value for that clause (shown as a small badge
+   next to the highlight) — its presence is also what marks the clause as
+   differing; omit the key entirely when it's the same as this row. */
 type PreviousModelKey = '7' | '6'
 
-type SpecSegment = { text: string; diff?: Partial<Record<PreviousModelKey, true>> }
+// Explicit render order (not Object.keys order) — '7'/'6' are numeric-
+// looking string keys, and JS objects always iterate integer-like keys in
+// ascending numeric order regardless of source order, so Object.keys on
+// PREVIOUS_MODEL_NAMES would silently put '6' before '7' in the dropdown.
+const PREVIOUS_MODEL_ORDER: PreviousModelKey[] = ['7', '6']
+
+type SpecSegment = { text: string; diff?: Partial<Record<PreviousModelKey, string>> }
 type SpecRow = { label: string; segments: SpecSegment[] }
 
 const PREVIOUS_MODEL_NAMES: Record<PreviousModelKey, string> = {
@@ -39,8 +48,8 @@ const SPEC_ROWS: SpecRow[] = [
   {
     label: 'תצוגה',
     segments: [
-      { text: 'ראשית 8.0” QXGA+', diff: { '6': true } },
-      { text: ', מסך חיצוני 6.5” FHD+', diff: { '6': true } },
+      { text: 'ראשית 8.0” QXGA+', diff: { '6': '7.6", 2160x1856' } },
+      { text: ', מסך חיצוני 6.5” FHD+', diff: { '6': '6.3", 2376x968' } },
       { text: ', Dynamic AMOLED 2X, קצב רענון אדפטיבי 1-120Hz' },
     ],
   },
@@ -48,40 +57,40 @@ const SPEC_ROWS: SpecRow[] = [
     label: 'מצלמות אחוריות',
     segments: [
       { text: 'מערך צילום בעל 3 עדשות' },
-      { text: ', רחבה במיוחד 50MP (F2.2)', diff: { '7': true, '6': true } },
-      { text: ', ראשית 200MP (F1.7)', diff: { '6': true } },
+      { text: ', רחבה במיוחד 50MP (F2.2)', diff: { '7': '12MP (F2.2)', '6': '12MP (F2.2)' } },
+      { text: ', ראשית 200MP (F1.7)', diff: { '6': '50MP (F1.8)' } },
       { text: ', טלפוטו 10MP (3x, F2.4)' },
     ],
   },
   {
     label: 'מצלמה קדמית',
     segments: [
-      { text: 'מסך פנימי 10MP (F2.2)', diff: { '6': true } },
+      { text: 'מסך פנימי 10MP (F2.2)', diff: { '6': '4MP תת-מסך (F2.2)' } },
       { text: ', מסך חיצוני 10MP (F2.2)' },
     ],
   },
   {
     label: 'מעבד',
-    segments: [{ text: 'Snapdragon 8 Elite Gen 5 for Galaxy (3 nm)', diff: { '7': true, '6': true } }],
+    segments: [{ text: 'Snapdragon 8 Elite Gen 5 for Galaxy (3 nm)', diff: { '7': 'Snapdragon 8 Elite (3nm)', '6': 'Snapdragon 8 Gen 3 (4nm)' } }],
   },
   {
     label: 'זיכרון ואחסון',
-    segments: [{ text: '256/512GB 12GB Ram, 1TB 16GB Ram', diff: { '6': true } }],
+    segments: [{ text: '256/512GB 12GB Ram, 1TB 16GB Ram', diff: { '6': '12GB בלבד, ללא אפשרות 16GB' } }],
   },
   {
     label: 'סוללה וטעינה',
     segments: [
-      { text: '5,000 mAh', diff: { '7': true, '6': true } },
-      { text: ', טעינה מהירה במיוחד 45W 2.0', diff: { '7': true, '6': true } },
-      { text: ', טעינה אלחוטית מהירה במיוחד 2.0', diff: { '7': true, '6': true } },
+      { text: '5,000 mAh', diff: { '7': '4,400 mAh', '6': '4,400 mAh' } },
+      { text: ', טעינה מהירה במיוחד 45W 2.0', diff: { '7': '25W', '6': '25W' } },
+      { text: ', טעינה אלחוטית מהירה במיוחד 2.0', diff: { '7': '25W, ללא גרסת 2.0', '6': 'לא צוינה טעינה אלחוטית' } },
     ],
   },
   {
     label: 'מידות ומשקל',
     segments: [
-      { text: 'פתוח 4.1 x 158.4 x 143.2 מ"מ', diff: { '6': true } },
-      { text: ', מקופל 8.9 x 158.4 x 72.8 מ"מ', diff: { '6': true } },
-      { text: ', 214 גרם', diff: { '6': true } },
+      { text: 'פתוח 4.1 x 158.4 x 143.2 מ"מ', diff: { '6': '5.6 x 132.6 x 153.5 מ"מ' } },
+      { text: ', מקופל 8.9 x 158.4 x 72.8 מ"מ', diff: { '6': '12.1 x 68.1 x 153.5 מ"מ' } },
+      { text: ', 214 גרם', diff: { '6': '239 גרם' } },
     ],
   },
 ]
@@ -89,13 +98,16 @@ const SPEC_ROWS: SpecRow[] = [
 function SpecValue({ segments, compareModel }: { segments: SpecSegment[]; compareModel: PreviousModelKey | null }) {
   return (
     <>
-      {segments.map((seg, i) =>
-        compareModel && seg.diff?.[compareModel] ? (
-          <mark key={i} className="ultra-table__value-diff">{seg.text}</mark>
-        ) : (
-          <span key={i}>{seg.text}</span>
-        ),
-      )}
+      {segments.map((seg, i) => {
+        const oldValue = compareModel ? seg.diff?.[compareModel] : undefined
+        if (!oldValue) return <span key={i}>{seg.text}</span>
+        return (
+          <span key={i}>
+            <mark className="ultra-table__value-diff">{seg.text}</mark>
+            <span className="ultra-table__value-was">{PREVIOUS_MODEL_NAMES[compareModel!]}: {oldValue}</span>
+          </span>
+        )
+      })}
     </>
   )
 }
@@ -894,7 +906,7 @@ export default function UltraPage() {
             onChange={(e) => setCompareModel((e.target.value || null) as PreviousModelKey | null)}
           >
             <option value="">ללא השוואה</option>
-            {(Object.keys(PREVIOUS_MODEL_NAMES) as PreviousModelKey[]).map((key) => (
+            {PREVIOUS_MODEL_ORDER.map((key) => (
               <option key={key} value={key}>Galaxy Z {PREVIOUS_MODEL_NAMES[key]}</option>
             ))}
           </select>

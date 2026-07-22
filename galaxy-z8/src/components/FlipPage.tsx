@@ -18,16 +18,25 @@ import './FlipPage.css'
 
 /* Full spec table, broken into per-clause segments instead of one string
    per row — each segment carries its own "differs from Flip7 / Flip6"
-   flags, hand-set from the real spec (not a runtime string-equality check,
+   info, hand-set from the real spec (not a runtime string-equality check,
    since this table's copy is phrased more tersely than the comparison
    sheets even when the underlying spec is identical). Segment text is
    written so simply concatenating every segment in order reproduces the
    exact original row copy (each non-first segment includes its own
    leading ", "), so choosing a comparison model never changes the
-   wording — it only colors the clauses that actually changed. */
+   wording — it only colors the clauses that actually changed. `diff[key]`
+   is the OLD model's own value for that clause (shown as a small badge
+   next to the highlight) — its presence is also what marks the clause as
+   differing; omit the key entirely when it's the same as this row. */
 type PreviousModelKey = '7' | '6'
 
-type SpecSegment = { text: string; diff?: Partial<Record<PreviousModelKey, true>> }
+// Explicit render order (not Object.keys order) — '7'/'6' are numeric-
+// looking string keys, and JS objects always iterate integer-like keys in
+// ascending numeric order regardless of source order, so Object.keys on
+// PREVIOUS_MODEL_NAMES would silently put '6' before '7' in the dropdown.
+const PREVIOUS_MODEL_ORDER: PreviousModelKey[] = ['7', '6']
+
+type SpecSegment = { text: string; diff?: Partial<Record<PreviousModelKey, string>> }
 type SpecRow = { label: string; segments: SpecSegment[] }
 
 const PREVIOUS_MODEL_NAMES: Record<PreviousModelKey, string> = {
@@ -39,20 +48,20 @@ const SPEC_ROWS: SpecRow[] = [
   {
     label: 'מסך ראשי',
     segments: [
-      { text: '6.9" FHD+, Dynamic AMOLED 2X, קצב רענון אדפטיבי 1-120Hz', diff: { '6': true } },
+      { text: '6.9" FHD+, Dynamic AMOLED 2X, קצב רענון אדפטיבי 1-120Hz', diff: { '6': '6.7", 2640x1080' } },
     ],
   },
   {
     label: 'מסך חיצוני',
     segments: [
-      { text: '4.1", Super AMOLED, 60/120Hz', diff: { '6': true } },
+      { text: '4.1", Super AMOLED, 60/120Hz', diff: { '6': '3.4", 720x748' } },
     ],
   },
   {
     label: 'מצלמה אחורית',
     segments: [
       { text: 'ראשית 50MP AF (F1.8)' },
-      { text: ', רחבה במיוחד 12MP (F2.2)', diff: { '7': true } },
+      { text: ', רחבה במיוחד 12MP (F2.2)', diff: { '7': '12MP, זום אופטי 2x' } },
     ],
   },
   {
@@ -61,26 +70,26 @@ const SPEC_ROWS: SpecRow[] = [
   },
   {
     label: 'מעבד',
-    segments: [{ text: 'Samsung Exynos 2600 (3 nm)', diff: { '7': true, '6': true } }],
+    segments: [{ text: 'Samsung Exynos 2600 (3 nm)', diff: { '7': 'Exynos 2500 (3nm)', '6': 'Snapdragon 8 Gen 3 (4nm)' } }],
   },
   {
     label: 'זיכרון ואחסון',
-    segments: [{ text: '12GB + 256/512GB', diff: { '6': true } }],
+    segments: [{ text: '12GB + 256/512GB', diff: { '6': '8/12GB + 256/512GB' } }],
   },
   {
     label: 'סוללה וטעינה',
     segments: [
-      { text: '4,300 mAh', diff: { '6': true } },
-      { text: ', טעינה מהירה 2.0 25W', diff: { '7': true, '6': true } },
+      { text: '4,300 mAh', diff: { '6': '4,000 mAh' } },
+      { text: ', טעינה מהירה 2.0 25W', diff: { '7': '25W, ללא גרסת 2.0', '6': '25W, ללא גרסת 2.0' } },
       { text: ', טעינה אלחוטית מהירה' },
     ],
   },
   {
     label: 'מידות ומשקל',
     segments: [
-      { text: 'פתוח 6.1 x 75.4 x 166.9 מ"מ', diff: { '6': true } },
-      { text: ', מקופל 13.1 x 75.4 x 85.7 מ"מ', diff: { '6': true } },
-      { text: ', 180 גרם', diff: { '7': true, '6': true } },
+      { text: 'פתוח 6.1 x 75.4 x 166.9 מ"מ', diff: { '6': '6.9 x 71.9 x 165.1 מ"מ' } },
+      { text: ', מקופל 13.1 x 75.4 x 85.7 מ"מ', diff: { '6': '14.9 x 71.9 x 85.1 מ"מ' } },
+      { text: ', 180 גרם', diff: { '7': '188 גרם', '6': '187 גרם' } },
     ],
   },
 ]
@@ -88,13 +97,16 @@ const SPEC_ROWS: SpecRow[] = [
 function SpecValue({ segments, compareModel }: { segments: SpecSegment[]; compareModel: PreviousModelKey | null }) {
   return (
     <>
-      {segments.map((seg, i) =>
-        compareModel && seg.diff?.[compareModel] ? (
-          <mark key={i} className="ultra-table__value-diff">{seg.text}</mark>
-        ) : (
-          <span key={i}>{seg.text}</span>
-        ),
-      )}
+      {segments.map((seg, i) => {
+        const oldValue = compareModel ? seg.diff?.[compareModel] : undefined
+        if (!oldValue) return <span key={i}>{seg.text}</span>
+        return (
+          <span key={i}>
+            <mark className="ultra-table__value-diff">{seg.text}</mark>
+            <span className="ultra-table__value-was">{PREVIOUS_MODEL_NAMES[compareModel!]}: {oldValue}</span>
+          </span>
+        )
+      })}
     </>
   )
 }
@@ -448,7 +460,7 @@ export default function FlipPage() {
             onChange={(e) => setCompareModel((e.target.value || null) as PreviousModelKey | null)}
           >
             <option value="">ללא השוואה</option>
-            {(Object.keys(PREVIOUS_MODEL_NAMES) as PreviousModelKey[]).map((key) => (
+            {PREVIOUS_MODEL_ORDER.map((key) => (
               <option key={key} value={key}>Galaxy Z {PREVIOUS_MODEL_NAMES[key]}</option>
             ))}
           </select>
