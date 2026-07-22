@@ -14,46 +14,90 @@ import './UltraPage.css'
 
 gsap.registerPlugin(ScrollTrigger)
 
-/* Full spec rows, shared between the main table and the "compare to a
-   previous model" drawer below it — the drawer diffs against this same
-   list by label, so it stays in sync with whatever the table displays. */
-const SPEC_ROWS = [
-  { label: 'תצוגה', value: 'ראשית 8.0” QXGA+, מסך חיצוני 6.5” FHD+, Dynamic AMOLED 2X, קצב רענון אדפטיבי 1-120Hz' },
-  { label: 'מצלמות אחוריות', value: 'מערך צילום בעל 3 עדשות, רחבה במיוחד 50MP (F2.2), ראשית 200MP (F1.7), טלפוטו 10MP (3x, F2.4)' },
-  { label: 'מצלמה קדמית', value: 'מסך פנימי 10MP (F2.2), מסך חיצוני 10MP (F2.2)' },
-  { label: 'מעבד', value: 'Snapdragon 8 Elite Gen 5 for Galaxy (3 nm)' },
-  { label: 'זיכרון ואחסון', value: '256/512GB 12GB Ram, 1TB 16GB Ram' },
-  { label: 'סוללה וטעינה', value: '5,000 mAh, טעינה מהירה במיוחד 45W 2.0, טעינה אלחוטית מהירה במיוחד 2.0' },
-  { label: 'מידות ומשקל', value: 'פתוח 4.1 x 158.4 x 143.2 מ"מ, מקופל 8.9 x 158.4 x 72.8 מ"מ, 214 גרם' },
-] as const
-
+/* Full spec table, broken into per-clause segments instead of one string
+   per row — each segment carries its own "differs from Fold7 / Fold6"
+   flags, hand-set from the real spec (not a runtime string-equality check,
+   since this table's copy is phrased more tersely than the comparison
+   sheets even when the underlying spec is identical — e.g. this row's
+   "ראשית 8.0” QXGA+" and Fold7's "8.0" פנימית Dynamic AMOLED 2X, 2184x1968,
+   120Hz, 2600 nit" describe the same screen in different words). Segment
+   text is written so simply concatenating every segment in order
+   reproduces the exact original row copy (each non-first segment includes
+   its own leading ", "), so choosing a comparison model never changes the
+   wording — it only colors the clauses that actually changed. */
 type PreviousModelKey = '7' | '6'
 
-const PREVIOUS_MODELS: Record<PreviousModelKey, { name: string; values: Record<string, string> }> = {
-  '7': {
-    name: 'Fold7',
-    values: {
-      'תצוגה': '8.0" פנימית Dynamic AMOLED 2X, 2184x1968, 120Hz, 2600 nit | 6.5" חיצונית Dynamic AMOLED 2X, 2520x1080, 120Hz',
-      'מצלמות אחוריות': '200MP רחבה f/1.7 OIS | 12MP אולטרה-רחבה f/2.2 | 10MP טלה זום אופטי 3x f/2.4 OIS',
-      'מצלמה קדמית': '10MP f/2.2 במסך הראשי (זווית 100°) | 10MP f/2.2 במסך החיצוני',
-      'מעבד': 'Snapdragon 8 Elite for Galaxy (3nm), Octa-core',
-      'זיכרון ואחסון': '12/16GB RAM, 256/512/1024GB אחסון',
-      'סוללה וטעינה': '4,400 mAh, טעינה אלחוטית 25W, טעינה מהירה 2.0',
-      'מידות ומשקל': 'פתוח 158.4 x 143.2 x 4.2mm, מקופל 158.4 x 72.8 x 8.9mm, 215 גרם',
-    },
+type SpecSegment = { text: string; diff?: Partial<Record<PreviousModelKey, true>> }
+type SpecRow = { label: string; segments: SpecSegment[] }
+
+const PREVIOUS_MODEL_NAMES: Record<PreviousModelKey, string> = {
+  '7': 'Fold7',
+  '6': 'Fold6',
+}
+
+const SPEC_ROWS: SpecRow[] = [
+  {
+    label: 'תצוגה',
+    segments: [
+      { text: 'ראשית 8.0” QXGA+', diff: { '6': true } },
+      { text: ', מסך חיצוני 6.5” FHD+', diff: { '6': true } },
+      { text: ', Dynamic AMOLED 2X, קצב רענון אדפטיבי 1-120Hz' },
+    ],
   },
-  '6': {
-    name: 'Fold6',
-    values: {
-      'תצוגה': '7.6" פנימית Dynamic AMOLED 2X, 2160x1856, 120Hz | 6.3" חיצונית Dynamic AMOLED 2X, 2376x968, 120Hz',
-      'מצלמות אחוריות': '50MP רחבה f/1.8 OIS | 12MP אולטרה-רחבה f/2.2 | 10MP טלה זום אופטי 3x f/2.4 OIS',
-      'מצלמה קדמית': '4MP תת-מסך f/2.2 במסך הפנימי | 10MP f/2.2 במסך החיצוני',
-      'מעבד': 'Snapdragon 8 Gen 3 for Galaxy (4nm), Octa-core',
-      'זיכרון ואחסון': '12GB RAM, 256/512/1024GB אחסון',
-      'סוללה וטעינה': '4,400 mAh, טעינה מהירה 25W',
-      'מידות ומשקל': 'פתוח 132.6 x 153.5 x 5.6mm, מקופל 68.1 x 153.5 x 12.1mm, 239 גרם',
-    },
+  {
+    label: 'מצלמות אחוריות',
+    segments: [
+      { text: 'מערך צילום בעל 3 עדשות' },
+      { text: ', רחבה במיוחד 50MP (F2.2)', diff: { '7': true, '6': true } },
+      { text: ', ראשית 200MP (F1.7)', diff: { '6': true } },
+      { text: ', טלפוטו 10MP (3x, F2.4)' },
+    ],
   },
+  {
+    label: 'מצלמה קדמית',
+    segments: [
+      { text: 'מסך פנימי 10MP (F2.2)', diff: { '6': true } },
+      { text: ', מסך חיצוני 10MP (F2.2)' },
+    ],
+  },
+  {
+    label: 'מעבד',
+    segments: [{ text: 'Snapdragon 8 Elite Gen 5 for Galaxy (3 nm)', diff: { '7': true, '6': true } }],
+  },
+  {
+    label: 'זיכרון ואחסון',
+    segments: [{ text: '256/512GB 12GB Ram, 1TB 16GB Ram', diff: { '6': true } }],
+  },
+  {
+    label: 'סוללה וטעינה',
+    segments: [
+      { text: '5,000 mAh', diff: { '7': true, '6': true } },
+      { text: ', טעינה מהירה במיוחד 45W 2.0', diff: { '7': true, '6': true } },
+      { text: ', טעינה אלחוטית מהירה במיוחד 2.0', diff: { '7': true, '6': true } },
+    ],
+  },
+  {
+    label: 'מידות ומשקל',
+    segments: [
+      { text: 'פתוח 4.1 x 158.4 x 143.2 מ"מ', diff: { '6': true } },
+      { text: ', מקופל 8.9 x 158.4 x 72.8 מ"מ', diff: { '6': true } },
+      { text: ', 214 גרם', diff: { '6': true } },
+    ],
+  },
+]
+
+function SpecValue({ segments, compareModel }: { segments: SpecSegment[]; compareModel: PreviousModelKey | null }) {
+  return (
+    <>
+      {segments.map((seg, i) =>
+        compareModel && seg.diff?.[compareModel] ? (
+          <mark key={i} className="ultra-table__value-diff">{seg.text}</mark>
+        ) : (
+          <span key={i}>{seg.text}</span>
+        ),
+      )}
+    </>
+  )
 }
 
 function useReveal<T extends HTMLElement>(disabled = false) {
@@ -765,8 +809,7 @@ function DisplayRevealSection({
 }
 
 export default function UltraPage() {
-  const [compareModel, setCompareModel] = useState<PreviousModelKey>('7')
-  const compareRows = SPEC_ROWS.filter((row) => PREVIOUS_MODELS[compareModel].values[row.label] !== row.value)
+  const [compareModel, setCompareModel] = useState<PreviousModelKey | null>(null)
 
   return (
     <div className="ultra" dir="rtl" lang="he">
@@ -837,50 +880,37 @@ export default function UltraPage() {
         <p className="ultra-body ultra-body--wide">
           כשהמסך הגדול פוגש ביצועים ללא תחרות – ה-Galaxy Z Fold8 Ultra לוקח את הפרודוקטיביות וחוויית ה-AI שלכם צעד אחד קדימה.
         </p>
+
+        {/* Compare dropdown — picks Fold7/Fold6; the table below highlights,
+            inline, only the clauses whose real spec differs from that
+            model (identical clauses stay plain, unlabeled). No separate
+            table/panel — same rows, same copy, just colored where relevant. */}
+        <div className="ultra-compare-select">
+          <label htmlFor="ultra-compare-select" className="ultra-compare-select__label">השוואה לדגם קודם:</label>
+          <select
+            id="ultra-compare-select"
+            className="ultra-compare-select__input"
+            value={compareModel ?? ''}
+            onChange={(e) => setCompareModel((e.target.value || null) as PreviousModelKey | null)}
+          >
+            <option value="">ללא השוואה</option>
+            {(Object.keys(PREVIOUS_MODEL_NAMES) as PreviousModelKey[]).map((key) => (
+              <option key={key} value={key}>Galaxy Z {PREVIOUS_MODEL_NAMES[key]}</option>
+            ))}
+          </select>
+        </div>
+
         <div className="ultra-table">
           {SPEC_ROWS.map((row) => (
             <div className="ultra-table__row" key={row.label}>
               <div className="ultra-table__label">{row.label}</div>
               <div className="ultra-table__value-wrap">
-                <div className="ultra-table__value">{row.value}</div>
+                <div className="ultra-table__value">
+                  <SpecValue segments={row.segments} compareModel={compareModel} />
+                </div>
               </div>
             </div>
           ))}
-        </div>
-
-        {/* Compare-to-previous-model drawer — tabs pick Fold7/Fold6, content
-            shows only the spec rows where that model's value differs from
-            the Ultra row above it (identical rows are omitted entirely). */}
-        <div className="ultra-compare">
-          <div className="ultra-compare__head">
-            <span className="ultra-compare__title">השוואה לדגם קודם</span>
-            <div className="ultra-compare__tabs" role="tablist" aria-label="בחירת דגם להשוואה">
-              {(Object.keys(PREVIOUS_MODELS) as PreviousModelKey[]).map((key) => (
-                <button
-                  key={key}
-                  type="button"
-                  role="tab"
-                  aria-selected={compareModel === key}
-                  className={`ultra-compare__tab${compareModel === key ? ' ultra-compare__tab--active' : ''}`}
-                  onClick={() => setCompareModel(key)}
-                >
-                  {PREVIOUS_MODELS[key].name}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="ultra-compare__panel" role="tabpanel">
-            {compareRows.length === 0 ? (
-              <div className="ultra-compare__empty">אין הבדל במפרט מול {PREVIOUS_MODELS[compareModel].name} בקטגוריות שלמעלה.</div>
-            ) : (
-              compareRows.map((row) => (
-                <div className="ultra-compare__row" key={row.label}>
-                  <span className="ultra-compare__label">{row.label}</span>
-                  <span className="ultra-table__diff">{PREVIOUS_MODELS[compareModel].name}: {PREVIOUS_MODELS[compareModel].values[row.label]}</span>
-                </div>
-              ))
-            )}
-          </div>
         </div>
       </Section>
 

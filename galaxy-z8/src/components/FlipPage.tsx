@@ -16,6 +16,89 @@ import coverScreen1 from '../assets/Flip/ChatGPT Image Jul 20, 2026, 05_21_40 PM
 import coverScreen2 from '../assets/Flip/ChatGPT Image Jul 20, 2026, 05_22_52 PM.png'
 import './FlipPage.css'
 
+/* Full spec table, broken into per-clause segments instead of one string
+   per row — each segment carries its own "differs from Flip7 / Flip6"
+   flags, hand-set from the real spec (not a runtime string-equality check,
+   since this table's copy is phrased more tersely than the comparison
+   sheets even when the underlying spec is identical). Segment text is
+   written so simply concatenating every segment in order reproduces the
+   exact original row copy (each non-first segment includes its own
+   leading ", "), so choosing a comparison model never changes the
+   wording — it only colors the clauses that actually changed. */
+type PreviousModelKey = '7' | '6'
+
+type SpecSegment = { text: string; diff?: Partial<Record<PreviousModelKey, true>> }
+type SpecRow = { label: string; segments: SpecSegment[] }
+
+const PREVIOUS_MODEL_NAMES: Record<PreviousModelKey, string> = {
+  '7': 'Flip7',
+  '6': 'Flip6',
+}
+
+const SPEC_ROWS: SpecRow[] = [
+  {
+    label: 'מסך ראשי',
+    segments: [
+      { text: '6.9" FHD+, Dynamic AMOLED 2X, קצב רענון אדפטיבי 1-120Hz', diff: { '6': true } },
+    ],
+  },
+  {
+    label: 'מסך חיצוני',
+    segments: [
+      { text: '4.1", Super AMOLED, 60/120Hz', diff: { '6': true } },
+    ],
+  },
+  {
+    label: 'מצלמה אחורית',
+    segments: [
+      { text: 'ראשית 50MP AF (F1.8)' },
+      { text: ', רחבה במיוחד 12MP (F2.2)', diff: { '7': true } },
+    ],
+  },
+  {
+    label: 'מצלמה קדמית',
+    segments: [{ text: '10MP FF, 1.12㎛ (F2.2)' }],
+  },
+  {
+    label: 'מעבד',
+    segments: [{ text: 'Samsung Exynos 2600 (3 nm)', diff: { '7': true, '6': true } }],
+  },
+  {
+    label: 'זיכרון ואחסון',
+    segments: [{ text: '12GB + 256/512GB', diff: { '6': true } }],
+  },
+  {
+    label: 'סוללה וטעינה',
+    segments: [
+      { text: '4,300 mAh', diff: { '6': true } },
+      { text: ', טעינה מהירה 2.0 25W', diff: { '7': true, '6': true } },
+      { text: ', טעינה אלחוטית מהירה' },
+    ],
+  },
+  {
+    label: 'מידות ומשקל',
+    segments: [
+      { text: 'פתוח 6.1 x 75.4 x 166.9 מ"מ', diff: { '6': true } },
+      { text: ', מקופל 13.1 x 75.4 x 85.7 מ"מ', diff: { '6': true } },
+      { text: ', 180 גרם', diff: { '7': true, '6': true } },
+    ],
+  },
+]
+
+function SpecValue({ segments, compareModel }: { segments: SpecSegment[]; compareModel: PreviousModelKey | null }) {
+  return (
+    <>
+      {segments.map((seg, i) =>
+        compareModel && seg.diff?.[compareModel] ? (
+          <mark key={i} className="ultra-table__value-diff">{seg.text}</mark>
+        ) : (
+          <span key={i}>{seg.text}</span>
+        ),
+      )}
+    </>
+  )
+}
+
 /* No processor/battery section for Flip8 — confirmed with the user that no
    dedicated content exists for either (only a one-line spec-table mention),
    and she explicitly asked to skip them rather than invent numbers. */
@@ -299,6 +382,8 @@ function FlexWindowSection() {
 }
 
 export default function FlipPage() {
+  const [compareModel, setCompareModel] = useState<PreviousModelKey | null>(null)
+
   return (
     <div className="flip" dir="rtl" lang="he">
       {/* ---------- 01 · Design → Comfort → Colors (3-layer crossfade;
@@ -349,21 +434,34 @@ export default function FlipPage() {
         <p className="ultra-body ultra-body--wide">
           ה-Flip הדק ביותר אי פעם — הFlip8 מעניק חוויית ניידות חסרת תקדים ומסך חיצוני חכם עם עוצמת ה-AI שנועד להקל על שגרת היום-יום שלכם.
         </p>
+
+        {/* Compare dropdown — picks Flip7/Flip6; the table below highlights,
+            inline, only the clauses whose real spec differs from that
+            model (identical clauses stay plain, unlabeled). No separate
+            table/panel — same rows, same copy, just colored where relevant. */}
+        <div className="ultra-compare-select">
+          <label htmlFor="ultra-compare-select" className="ultra-compare-select__label">השוואה לדגם קודם:</label>
+          <select
+            id="ultra-compare-select"
+            className="ultra-compare-select__input"
+            value={compareModel ?? ''}
+            onChange={(e) => setCompareModel((e.target.value || null) as PreviousModelKey | null)}
+          >
+            <option value="">ללא השוואה</option>
+            {(Object.keys(PREVIOUS_MODEL_NAMES) as PreviousModelKey[]).map((key) => (
+              <option key={key} value={key}>Galaxy Z {PREVIOUS_MODEL_NAMES[key]}</option>
+            ))}
+          </select>
+        </div>
+
         <div className="ultra-table">
-          {[
-            { label: 'מסך ראשי', value: '6.9" FHD+, Dynamic AMOLED 2X, קצב רענון אדפטיבי 1-120Hz' },
-            { label: 'מסך חיצוני', value: '4.1", Super AMOLED, 60/120Hz' },
-            { label: 'מצלמה אחורית', value: 'ראשית 50MP AF (F1.8), רחבה במיוחד 12MP (F2.2)' },
-            { label: 'מצלמה קדמית', value: '10MP FF, 1.12㎛ (F2.2)' },
-            { label: 'מעבד', value: 'Samsung Exynos 2600 (3 nm)' },
-            { label: 'זיכרון ואחסון', value: '12GB + 256/512GB' },
-            { label: 'סוללה וטעינה', value: '4,300 mAh, טעינה מהירה 2.0 25W, טעינה אלחוטית מהירה' },
-            { label: 'מידות ומשקל', value: 'פתוח 6.1 x 75.4 x 166.9 מ"מ, מקופל 13.1 x 75.4 x 85.7 מ"מ, 180 גרם' },
-          ].map((row) => (
+          {SPEC_ROWS.map((row) => (
             <div className="ultra-table__row" key={row.label}>
               <div className="ultra-table__label">{row.label}</div>
               <div className="ultra-table__value-wrap">
-                <div className="ultra-table__value">{row.value}</div>
+                <div className="ultra-table__value">
+                  <SpecValue segments={row.segments} compareModel={compareModel} />
+                </div>
               </div>
             </div>
           ))}
