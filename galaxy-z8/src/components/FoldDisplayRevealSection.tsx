@@ -108,7 +108,12 @@ export default function FoldDisplayRevealSection() {
   const rafRef = useRef<number>(0)
   const [phase, setPhase] = useState(0)
   const phaseRef = useRef(0)
-  const isCompact = useIsCompact(860)
+  // Explicitly pinned at 1180 (not the site-wide 768 default) — this
+  // stage's fitScale has no legibility floor (see the ~1920x1080 stage
+  // sizing below, confirmed illegible ~0.4-0.65 scale across 768-1180), so
+  // it must keep its stacked fallback through the entire tablet width
+  // range, not just phones.
+  const isCompact = useIsCompact(1180)
   const [reduceMotion, setReduceMotion] = useState(false)
 
   useEffect(() => {

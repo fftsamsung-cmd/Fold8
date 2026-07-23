@@ -38,7 +38,11 @@
   pointer-events: none;
 }
 
-@media (max-width: 768px) {
+/* Raised from 768px to 1180px, alongside the other navbar breakpoints
+   below — keeps the compact nav (and its matching badge position) through
+   the whole tablet band, since the desktop nav's section-pill row has no
+   width safety valve past a hidden-scrollbar overflow strip. */
+@media (max-width: 1180px) {
   .navbar__section-badge {
     top: 80px;
     left: 16px;
@@ -79,7 +83,7 @@
   transition: height 200ms ease;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1180px) {
   .navbar { height: 64px; }
   .navbar__inner { padding: 0 var(--sp-2); }
   .navbar__logo-img { height: 20px; }
@@ -108,7 +112,7 @@
   color: var(--samsung-white);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1180px) {
   .navbar__links { display: none; }
 }
 
@@ -127,7 +131,7 @@
 }
 .navbar__section-track::-webkit-scrollbar { display: none; }
 
-@media (max-width: 768px) {
+@media (max-width: 1180px) {
   .navbar__section-track { display: none; }
 }
 
@@ -220,7 +224,7 @@
    already reachable via the pill row, so keep the panel to device links. */
 .navbar__menu-group--sections { display: none; }
 .navbar__menu-divider { display: none; }
-@media (max-width: 768px) {
+@media (max-width: 1180px) {
   .navbar__menu-group--sections { display: flex; }
   .navbar__menu-divider {
     display: block;

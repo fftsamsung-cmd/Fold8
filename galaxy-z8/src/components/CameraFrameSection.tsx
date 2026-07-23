@@ -3,6 +3,7 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { GalaxyAiDesktopCard, GalaxyAiMobileCard, FOLLOWCAM_DATA, PHOTO_ASSIST_DATA } from './GalaxyAiStackSection'
 import { useIsCompact } from './SectionKit'
+import cameraCompactVideo from '../assets/Ultra/מצלמה/hf_20260715_145338_65b00355-a949-4c55-9034-58f1bfd2609e.mp4'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -105,14 +106,16 @@ const PHOTO_HOLD_END = 0.75
 const FOLLOWCAM_ENTER_END = 0.9
 
 /* Compact's own merged-pin handoff — same "one sticky screen, crossfade in
-   place" technique as Fold's camera section: frames scrub across
-   0 → COMPACT_FRAME_END, then the compact content layer (title/subtitle,
-   which stay fixed on screen the whole time) fades in. Below that fixed
-   headline, one reserved card slot holds the "מצלמות אחוריות" specs card and
-   the "שלבי ההדגמה" steps card stacked in the same spot, crossfading between
-   them (COMPACT_SPECS_EXIT_START → COMPACT_STEPS_ENTER) instead of swapping
-   full screens — reads as one continuous page with updating content rather
-   than a flip between two screens, and only ever shows one card's worth of
+   place" technique as Fold's camera section: the camera video plays on its
+   own (not scroll-scrubbed — same change as Fold's camera/Performance
+   sections, see cameraVisual below) across 0 → COMPACT_FRAME_END, then the
+   compact content layer (title/subtitle, which stay fixed on screen the
+   whole time) fades in. Below that fixed headline, one reserved card slot
+   holds the "מצלמות אחוריות" specs card and the "שלבי ההדגמה" steps card
+   stacked in the same spot, crossfading between them
+   (COMPACT_SPECS_EXIT_START → COMPACT_STEPS_ENTER) instead of swapping full
+   screens — reads as one continuous page with updating content rather than
+   a flip between two screens, and only ever shows one card's worth of
    height at a time (the two used to share a screen and together ran taller
    than 100dvh, getting silently clipped by the pin's overflow:hidden).
    The whole content layer then fades out (COMPACT_STEPS_EXIT_START →
@@ -128,18 +131,24 @@ const FOLLOWCAM_ENTER_END = 0.9
    sit on top of and hide the device-demo steps, while a scrim dims
    everything behind it except the video, so it reads as the same screen the
    whole time rather than a screen change. */
-const COMPACT_FRAME_END = 0.188
-const COMPACT_SPECS_ENTER = 0.283
-const COMPACT_SPECS_EXIT_START = 0.368
-const COMPACT_STEPS_ENTER = 0.412
-const COMPACT_STEPS_EXIT_START = 0.5
-const COMPACT_CARD1_ENTER = 0.548
-const COMPACT_CARD1_STEPS_EXIT_START = 0.621
-const COMPACT_CARD1_EXAMPLES_ENTER = 0.67
-const COMPACT_CARD1_EXIT_START = 0.75
-const COMPACT_CARD2_ENTER = 0.797
-const COMPACT_CARD2_STEPS_EXIT_START = 0.871
-const COMPACT_CARD2_EXAMPLES_ENTER = 0.92
+// Was 0.188 of an 815vh wrapper (~153vh) back when this phase scrubbed
+// still frames one-by-one via scroll. Now that the visual is a real video
+// playing on its own timeline, scroll only needs to hold it on screen
+// briefly before handing off; shrunk to 0.07 of the now-710vh wrapper
+// (~50vh) and every later phase's constant shifted down to keep the same
+// hold/crossfade durations (only the total scroll distance got shorter).
+const COMPACT_FRAME_END = 0.07
+const COMPACT_SPECS_ENTER = 0.18
+const COMPACT_SPECS_EXIT_START = 0.28
+const COMPACT_STEPS_ENTER = 0.33
+const COMPACT_STEPS_EXIT_START = 0.43
+const COMPACT_CARD1_ENTER = 0.48
+const COMPACT_CARD1_STEPS_EXIT_START = 0.57
+const COMPACT_CARD1_EXAMPLES_ENTER = 0.62
+const COMPACT_CARD1_EXIT_START = 0.72
+const COMPACT_CARD2_ENTER = 0.77
+const COMPACT_CARD2_STEPS_EXIT_START = 0.85
+const COMPACT_CARD2_EXAMPLES_ENTER = 0.91
 
 const clamp01 = (v: number) => Math.min(Math.max(v, 0), 1)
 
@@ -158,7 +167,12 @@ export default function CameraFrameSection() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const imagesRef = useRef<(HTMLCanvasElement | null)[]>(Array(TOTAL_FRAMES).fill(null))
   const [ready, setReady] = useState(false)
-  const isCompact = useIsCompact(860)
+  // Explicitly pinned at 1180 (not the site-wide 768 default) — the desktop
+  // overlay positions specs/title cards at negative right/left offsets
+  // (e.g. right:-27.2%) that assume ample page margin beyond the image box,
+  // which desktop widths have and tablet widths don't (confirmed: text runs
+  // off-screen at ~1150px). Tablets keep the compact centered-card layout.
+  const isCompact = useIsCompact(1180)
   // This exploded-parts sequence is ~47MB of PNGs — deferring the preload
   // loop below until the section is actually near the viewport means a
   // visitor who never scrolls this far never downloads it.
@@ -212,65 +226,78 @@ export default function CameraFrameSection() {
 
   useEffect(() => {
     if (!nearViewport) return
-    const canvas = canvasRef.current
     const wrapper = wrapperRef.current
-    if (!canvas || !wrapper) return
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
+    if (!wrapper) return
 
-    const drawFrame = (index: number) => {
-      const frame = imagesRef.current[index]
-      if (!frame) return
-      if (canvas.width !== frame.width) {
-        canvas.width = frame.width
-        canvas.height = frame.height
-      }
-      ctx.clearRect(0, 0, canvas.width, canvas.height)
-      ctx.drawImage(frame, 0, 0)
-    }
-
-    // Redraw the connector lines from each spec row's actual position to its
-    // lens target — the rows are laid out responsively (%/clamp), so the
-    // fixed design-handoff coordinates alone can't be trusted to start at
-    // the right place; measure the real DOM each time instead.
-    const svg = connectorsRef.current
-    const updatePaths = () => {
-      if (!svg) return
-      const svgRect = svg.getBoundingClientRect()
-      if (!svgRect.width || !svgRect.height) return
-      rowRefs.current.forEach((row, i) => {
-        const path = pathRefs.current[i]
-        if (!row || !path) return
-        const rowRect = row.getBoundingClientRect()
-        const startX = ((rowRect.left - svgRect.left) / svgRect.width) * 1672
-        const startY = ((rowRect.top + rowRect.height / 2 - svgRect.top) / svgRect.height) * 941
-        const [ex, ey] = LENS_TARGETS[i]
-        const c1x = startX + (ex - startX) * CURVE_C1.x
-        const c1y = startY + (ey - startY) * CURVE_C1.y
-        const c2x = startX + (ex - startX) * CURVE_C2.x
-        const c2y = startY + (ey - startY) * CURVE_C2.y
-        path.setAttribute('d', `M ${startX} ${startY} C ${c1x} ${c1y}, ${c2x} ${c2y}, ${ex} ${ey}`)
-      })
-    }
-
-    // Pre-load all frames; draw frame 0 as soon as it's ready. The canvas
-    // (and therefore the whole percentage-based layout below it) only takes
-    // on its real size once this first frame arrives, so the connector
-    // lines need re-measuring right here too — not just on scroll/resize.
-    let firstFrameReady = false
-    FRAME_URLS.forEach((url, i) => {
-      const img = new Image()
-      img.onload = () => {
-        imagesRef.current[i] = stripBackground(img)
-        if (i === 0 && !firstFrameReady) {
-          firstFrameReady = true
-          drawFrame(0)
-          setReady(true)
-          requestAnimationFrame(updatePaths)
+    // Desktop-only: the exploded-parts frame sequence, drawn to a canvas and
+    // scrubbed by scroll, plus the connector-line overlay measured off it.
+    // Compact no longer uses either — its camera visual is a real playing
+    // <video> now (see COMPACT_FRAME_END comment) and its overlay text never
+    // reveals (opacity stays 0, see the isCompact branch below) — so
+    // skipping this means mobile visitors never download the ~47MB PNG
+    // sequence in the first place.
+    let updatePaths = () => {}
+    let drawFrame = (_index: number) => {}
+    if (!isCompact) {
+      const canvas = canvasRef.current
+      const ctx = canvas?.getContext('2d')
+      if (canvas && ctx) {
+        drawFrame = (index: number) => {
+          const frame = imagesRef.current[index]
+          if (!frame) return
+          if (canvas.width !== frame.width) {
+            canvas.width = frame.width
+            canvas.height = frame.height
+          }
+          ctx.clearRect(0, 0, canvas.width, canvas.height)
+          ctx.drawImage(frame, 0, 0)
         }
+
+        // Redraw the connector lines from each spec row's actual position to
+        // its lens target — the rows are laid out responsively (%/clamp),
+        // so the fixed design-handoff coordinates alone can't be trusted to
+        // start at the right place; measure the real DOM each time instead.
+        const svg = connectorsRef.current
+        updatePaths = () => {
+          if (!svg) return
+          const svgRect = svg.getBoundingClientRect()
+          if (!svgRect.width || !svgRect.height) return
+          rowRefs.current.forEach((row, i) => {
+            const path = pathRefs.current[i]
+            if (!row || !path) return
+            const rowRect = row.getBoundingClientRect()
+            const startX = ((rowRect.left - svgRect.left) / svgRect.width) * 1672
+            const startY = ((rowRect.top + rowRect.height / 2 - svgRect.top) / svgRect.height) * 941
+            const [ex, ey] = LENS_TARGETS[i]
+            const c1x = startX + (ex - startX) * CURVE_C1.x
+            const c1y = startY + (ey - startY) * CURVE_C1.y
+            const c2x = startX + (ex - startX) * CURVE_C2.x
+            const c2y = startY + (ey - startY) * CURVE_C2.y
+            path.setAttribute('d', `M ${startX} ${startY} C ${c1x} ${c1y}, ${c2x} ${c2y}, ${ex} ${ey}`)
+          })
+        }
+
+        // Pre-load all frames; draw frame 0 as soon as it's ready. The
+        // canvas (and therefore the whole percentage-based layout below it)
+        // only takes on its real size once this first frame arrives, so the
+        // connector lines need re-measuring right here too — not just on
+        // scroll/resize.
+        let firstFrameReady = false
+        FRAME_URLS.forEach((url, i) => {
+          const img = new Image()
+          img.onload = () => {
+            imagesRef.current[i] = stripBackground(img)
+            if (i === 0 && !firstFrameReady) {
+              firstFrameReady = true
+              drawFrame(0)
+              setReady(true)
+              requestAnimationFrame(updatePaths)
+            }
+          }
+          img.src = url
+        })
       }
-      img.src = url
-    })
+    }
 
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
@@ -338,8 +365,6 @@ export default function CameraFrameSection() {
           immediateRender: false,
           onUpdate: () => {
             const overall = frameState.p
-            const frameLocal = clamp01(overall / COMPACT_FRAME_END)
-            drawFrame(Math.round(frameLocal * (TOTAL_FRAMES - 1)))
 
             const contentEnterT = clamp01((overall - COMPACT_FRAME_END) / (COMPACT_SPECS_ENTER - COMPACT_FRAME_END))
             const cardCrossfadeT = clamp01((overall - COMPACT_SPECS_EXIT_START) / (COMPACT_STEPS_ENTER - COMPACT_SPECS_EXIT_START))
@@ -425,18 +450,36 @@ export default function CameraFrameSection() {
 
   const cameraVisual = (
     <div style={{ position: 'relative', maxHeight: '70vh', maxWidth: '76vw' }}>
-      <canvas
-        ref={canvasRef}
-        style={{
-          maxHeight: '70vh',
-          maxWidth: '76vw',
-          width: 'auto',
-          height: 'auto',
-          display: 'block',
-          opacity: ready ? 1 : 0,
-          transition: 'opacity 0.3s ease',
-        }}
-      />
+      {isCompact ? (
+        <video
+          src={cameraCompactVideo}
+          autoPlay
+          muted
+          playsInline
+          style={{
+            maxHeight: '70vh',
+            maxWidth: '76vw',
+            width: 'auto',
+            height: 'auto',
+            display: 'block',
+            borderRadius: 18,
+            boxShadow: '0 24px 60px rgba(0,0,0,0.14)',
+          }}
+        />
+      ) : (
+        <canvas
+          ref={canvasRef}
+          style={{
+            maxHeight: '70vh',
+            maxWidth: '76vw',
+            width: 'auto',
+            height: 'auto',
+            display: 'block',
+            opacity: ready ? 1 : 0,
+            transition: 'opacity 0.3s ease',
+          }}
+        />
+      )}
 
       {/* Overlay — positions ported as percentages of the 1672×941 design
           canvas so they track the image box regardless of its rendered size. */}
@@ -653,7 +696,7 @@ export default function CameraFrameSection() {
 
   if (isCompact) {
     return (
-      <div ref={wrapperRef} id="cameras" style={{ height: '815vh', position: 'relative', background: '#fff' }}>
+      <div ref={wrapperRef} id="cameras" style={{ height: '710vh', position: 'relative', background: '#fff' }}>
         <div style={{ position: 'sticky', top: 0, height: '100vh', width: '100%', overflow: 'hidden', background: '#fff' }}>
           <div
             ref={cameraLayerRef}

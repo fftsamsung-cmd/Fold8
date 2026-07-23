@@ -216,8 +216,12 @@ function DisplayRevealSection({
   // portrait/narrow viewports — scaling to fit width alone shrinks the
   // whole stage to a ~200px-tall sliver with hundreds of px of blank space
   // above and below, and the text becomes unreadably small. Below this
-  // width, swap to a normal stacked responsive layout instead.
-  const isCompact = useIsCompact(860)
+  // width, swap to a normal stacked responsive layout instead. Explicitly
+  // pinned at 1180 (not the site-wide 768 default) — this stage has no
+  // legibility floor on its own fitScale (computes to ~0.4-0.65 across the
+  // whole 768-1180 tablet range, confirmed illegible), so it must keep its
+  // fallback through the entire tablet width range, not just phones.
+  const isCompact = useIsCompact(1180)
 
   useEffect(() => {
     if (isCompact) return

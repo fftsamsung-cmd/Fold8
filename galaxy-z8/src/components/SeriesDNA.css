@@ -126,8 +126,9 @@
   max-width: 36ch;
 }
 
-/* Mobile */
-@media (max-width: 900px) {
+/* Mobile / tablet — raised from 900px to 1180px so tablets keep this
+   stacked layout instead of a cramped `1.6fr/1fr/1fr` 3-column squeeze. */
+@media (max-width: 1180px) {
   .dna__cards {
     grid-template-columns: 1fr;
   }

@@ -34,7 +34,7 @@ function FoldColorsCard({ tip }: { tip?: string }) {
   const { activeId, active, handleSelect } = useAutoAdvanceColors(FOLD_COLORS)
 
   return (
-    <MainLayer mobileCard>
+    <MainLayer mobileCard pinned>
     <div className="ultra-split">
       <div className="ultra-split__visual ultra-colors-visual" style={{ minHeight: 340 }}>
         <div
@@ -67,7 +67,7 @@ function FoldColorsCard({ tip }: { tip?: string }) {
 }
 
 const DESIGN_MAIN = (
-  <MainLayer mobileCard>
+  <MainLayer mobileCard pinned>
     <div className="ultra-split">
       <div className="ultra-split__text">
         <Eyebrow>מבנה</Eyebrow>
@@ -108,7 +108,7 @@ const DESIGN_MAIN = (
    its own (isCompact || reduceMotion) and a second sticky-pin implementation
    isn't worth building for that case. */
 function DesignSection() {
-  const isCompact = useIsCompact(860, { settle: true })
+  const isCompact = useIsCompact(768, { settle: true })
   const [reduceMotion, setReduceMotion] = useState(false)
 
   useEffect(() => {
@@ -137,7 +137,7 @@ function DesignSection() {
    the original plain <Section> (also the reduced-motion fallback, since a
    held pin is itself a motion effect). */
 function ReadingSection() {
-  const isCompact = useIsCompact(860, { settle: true })
+  const isCompact = useIsCompact(768, { settle: true })
   const [reduceMotion, setReduceMotion] = useState(false)
 
   useEffect(() => {
@@ -297,7 +297,7 @@ function FoldBatterySection() {
   const percentRef = useRef<HTMLDivElement>(null)
   const cardRef = useRef<HTMLDivElement>(null)
   const [reduceMotion, setReduceMotion] = useState(false)
-  const isCompact = useIsCompact(860)
+  const isCompact = useIsCompact(768)
 
   useEffect(() => {
     setReduceMotion(window.matchMedia('(prefers-reduced-motion: reduce)').matches)

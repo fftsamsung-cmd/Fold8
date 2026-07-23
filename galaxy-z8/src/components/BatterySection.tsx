@@ -37,7 +37,7 @@ export default function BatterySection() {
   // the same sticky-scrub-ring + fitted-card mobile layout the rest of the
   // mobile work uses; the scroll-driven fill/card/flash logic itself is
   // unchanged and untouched (same refs, same fractions, either layout).
-  const isCompact = useIsCompact(860)
+  const isCompact = useIsCompact(768)
 
   useEffect(() => {
     setReduceMotion(window.matchMedia('(prefers-reduced-motion: reduce)').matches)

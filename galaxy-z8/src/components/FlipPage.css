@@ -81,10 +81,12 @@ h2.flip-headline--match-card {
    fallback already stack at 860px elsewhere on the site; these
    .flip-scoped overrides bring the shared ultra-split two-column
    rows (Design/Colors/Display/Camera-intro) in line with that same
-   860px threshold instead of the site-wide 560px one, so Flip8
-   doesn't show a cramped two-column layout on portrait tablets.
+   threshold instead of the site-wide 560px one, so Flip8 doesn't show a
+   cramped two-column layout on tablets. Raised from 860px to 1180px so the
+   whole tablet band gets these fixes — except the pin-uncap rule below,
+   which must stay scoped to real phones only (see its own comment).
    ============================================================ */
-@media (max-width: 860px) {
+@media (max-width: 1180px) {
   .flip .ultra-split,
   .flip .ultra-split--reverse {
     flex-direction: column;
@@ -165,14 +167,17 @@ h2.flip-headline--match-card {
   .flip .followcam__intro > .ultra-sales-tip {
     order: 7;
   }
+}
 
-  /* .ultra-galaxyai-stack__inner caps at max-height:min(90dvh,820px) with
-     overflow-y:auto — needed on desktop where CrossfadeStage pins the card
-     inside a fixed 100vh layer (content taller than that would otherwise
-     be clipped with no way to reach it). Below this same 860px breakpoint
-     CrossfadeStage already falls back to plain stacked flow (no pinning),
-     so nothing requires the cap there — drop it so tall cards (FlexCam,
-     Nightography) grow to fit instead of scrolling internally. */
+/* .ultra-galaxyai-stack__inner caps at max-height:min(90dvh,820px) with
+   overflow-y:auto — needed wherever CrossfadeStage is actually pinning the
+   card inside a fixed 100vh layer (content taller than that would otherwise
+   be clipped with no way to reach it). CrossfadeStage now pins starting at
+   768px (not 860px), so this uncap must stay scoped to real phones only
+   (<768px) — kept as its own breakpoint, separate from the 1180px block
+   above, so it doesn't drift out of sync with CrossfadeStage's own
+   pinning threshold again. */
+@media (max-width: 767px) {
   .flip .ultra-galaxyai-stack__inner {
     max-height: none;
     overflow-y: visible;

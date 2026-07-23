@@ -84,7 +84,7 @@ export default function DesignSection() {
   // desktop split/crossfade regardless of viewport. isCompact adds the same
   // sticky single-screen crossfade-in-place technique the rest of the
   // mobile work uses (see the compact branch below); desktop is untouched.
-  const isCompact = useIsCompact(860)
+  const isCompact = useIsCompact(768)
   const compactWrapperRef = useRef<HTMLDivElement>(null)
   const compactVideoLayerRef = useRef<HTMLDivElement>(null)
   const compactColorsLayerRef = useRef<HTMLDivElement>(null)

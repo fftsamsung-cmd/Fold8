@@ -254,14 +254,16 @@
   transform: translateX(-3px);
 }
 
-/* Mobile */
-@media (max-width: 900px) {
+/* Mobile / tablet — raised from 900px to 1180px so tablets get this
+   already-built 2-column layout instead of the raw 3-column
+   `1fr 1fr 1.2fr` grid squeezed into ~250-320px columns. */
+@media (max-width: 1180px) {
   .devices__grid {
     grid-template-columns: 1fr;
   }
 }
 
-@media (min-width: 640px) and (max-width: 900px) {
+@media (min-width: 640px) and (max-width: 1180px) {
   .devices__grid {
     grid-template-columns: 1fr 1fr;
   }

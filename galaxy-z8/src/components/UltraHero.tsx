@@ -161,7 +161,7 @@ export default function UltraHero() {
   // Paused until its own layer is about to become visible, then playing
   // only while it's actually shown.
   const miniVideoRef = useRef<HTMLVideoElement>(null)
-  const isCompact = useIsCompact(860)
+  const isCompact = useIsCompact(768)
 
   useEffect(() => {
     if (isCompact) {

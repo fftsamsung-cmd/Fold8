@@ -45,8 +45,10 @@
 /* Mobile/tablet: hidden across all three device pages — the fixed
    next/back pills fight for space with the sticky cinematic sections
    (Design/Cameras/FlexWindow) and their own scroll-driven progress, and
-   normal swipe-scroll already covers navigation at this breakpoint. */
-@media (max-width: 860px) {
+   normal swipe-scroll already covers navigation at this breakpoint. Raised
+   from 860px to 1180px to match the tablet band where those pinned
+   sections are now active too. */
+@media (max-width: 1180px) {
   .ultra-continue-btn {
     display: none;
   }

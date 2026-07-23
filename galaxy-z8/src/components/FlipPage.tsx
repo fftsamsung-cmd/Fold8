@@ -211,7 +211,7 @@ const DESIGN_MAIN = (
 )
 
 const CAMERA_MAIN = (
-  <MainLayer mobileCard>
+  <MainLayer mobileCard pinned>
     <div className="ultra-split ultra-split--reverse">
       <div className="ultra-split__text">
         <Eyebrow><span dir="ltr">GALAXY AI</span></Eyebrow>
@@ -254,7 +254,7 @@ const CAMERA_MAIN = (
    CrossfadeStage, since it already falls back to a plain stacked layout on
    its own. */
 function DesignSection() {
-  const isCompact = useIsCompact(860, { settle: true })
+  const isCompact = useIsCompact(768, { settle: true })
   const [reduceMotion, setReduceMotion] = useState(false)
 
   useEffect(() => {
@@ -297,7 +297,7 @@ function DesignSection() {
    CrossfadeStage exactly as before; reduced-motion also keeps CrossfadeStage,
    since it already falls back to a plain stacked layout on its own. */
 function CamerasSection() {
-  const isCompact = useIsCompact(860, { settle: true })
+  const isCompact = useIsCompact(768, { settle: true })
   const [reduceMotion, setReduceMotion] = useState(false)
 
   useEffect(() => {
@@ -358,7 +358,7 @@ function CamerasSection() {
    case — see that file). Desktop keeps the original FeatureCard exactly as
    before; reduced-motion also keeps it, rendered directly in normal flow. */
 function FlexWindowSection() {
-  const isCompact = useIsCompact(860, { settle: true })
+  const isCompact = useIsCompact(768, { settle: true })
   const [reduceMotion, setReduceMotion] = useState(false)
 
   useEffect(() => {

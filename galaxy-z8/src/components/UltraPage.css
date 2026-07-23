@@ -334,13 +334,17 @@
 
 /* ---------- Shared mobile/tablet card utilities (opt-in via MainLayer's
    mobileCard/pinned props and FeatureCard's sectionName/pinned props) —
-   used by any page's device components, not just one. Every page opts in
-   per call site, so this being unscoped by page is safe: the classes only
-   ever appear where a caller explicitly passes the prop. ---------- */
+   used by any page's device components, not just one. Some callers
+   (FoldPage's DESIGN_MAIN/FoldColorsCard, FlipPage's equivalents) pass
+   mobileCard unconditionally and rely entirely on this media query to gate
+   the visual effect, rather than on isCompact — so this must track the
+   same tablet upper bound (1180px) as the rest of the responsive pass, not
+   just the phone breakpoint, or tablet widths get an unstyled/boxed
+   mismatch against the desktop-rendered content now sitting inside them. */
 .ultra-mobile-only {
   display: none;
 }
-@media (max-width: 860px) {
+@media (max-width: 1180px) {
   .ultra-mobile-only {
     display: block;
   }
@@ -395,7 +399,11 @@
 .ultra-split__text { flex: 1.1; min-width: 0; }
 .ultra-split__visual { flex: 0.9; min-width: 0; }
 
-@media (max-width: 560px) {
+/* Raised from the old 560px cutoff to 1180px — below that, a two-column
+   split leaves each side only ~250-350px wide (cramped on portrait/landscape
+   tablets), so stack through the whole tablet band instead, matching the
+   fix Fold8/Flip8 already apply to this same shared class. */
+@media (max-width: 1180px) {
   .ultra-split,
   .ultra-split--reverse { flex-direction: column; }
 }
@@ -592,7 +600,10 @@
 .followcam__block--examples .followcam__label {
   text-align: center;
 }
-@media (max-width: 860px) {
+/* Raised from 860px to 1180px so tablets get the stacked treatment too —
+   above 860px each column only had ~375-440px, tight but survivable; below
+   1180px is where the extra vertical room actually reads better. */
+@media (max-width: 1180px) {
   .followcam__header {
     flex-direction: column;
   }

@@ -4,6 +4,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { CountUpSpan } from './CountUpSpan'
 import { useIsCompact } from './SectionKit'
 import forGalaxyBadge from '../assets/Ultra/for-galaxy-badge.png'
+import performanceCompactVideo from '../assets/Ultra/מעבד/סרטון מעבד 1.1.mp4'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -23,23 +24,29 @@ function loadFrameSet(modules: Record<string, string>) {
   return { urls, numbers, total: urls.length }
 }
 
-/* Desktop: dark reflective-floor exploded shot, 1920x1080, frames 020-090.
-   Mobile: separate white-background 1:1 (1440x1440) sequence, frames
-   015-150 — a different asset entirely (not a crop of the desktop one), so
-   it gets its own object-fit/background treatment below rather than reusing
-   desktop's cover/black-backdrop styling as-is. */
+/* Desktop: dark reflective-floor exploded shot, 1920x1080, frames 020-090,
+   still scroll-scrubbed on a canvas. Mobile used to scrub a separate
+   white-background 1:1 frame sequence the same way, but now just plays
+   performanceCompactVideo once instead (see COMPACT_CARD_APPEAR_PROGRESS
+   below) — so only the desktop frame set is loaded here at all. */
 const DESKTOP_FRAMES = loadFrameSet(
   import.meta.glob<string>('../assets/Ultra/performance-frames/*.png', { query: '?url', import: 'default', eager: true })
 )
-const MOBILE_FRAMES = loadFrameSet(
-  import.meta.glob<string>('../assets/Ultra/Mobile/performance-frames/*.png', { query: '?url', import: 'default', eager: true })
-)
 
 /* The text card starts fading in once the scrub reaches this frame number
-   — chosen per sequence at the same relative point (~79% through), the
-   moment the assembled chip badge is fully in frame on both. */
+   — chosen at the same relative point (~79% through) the assembled chip
+   badge is fully in frame. Desktop only — mobile no longer scrubs frames
+   (see COMPACT_CARD_APPEAR_PROGRESS below). */
 const DESKTOP_CARD_APPEAR_FRAME = 75
-const MOBILE_CARD_APPEAR_FRAME = 121
+
+/* Mobile's card reveal — the chip video now plays on its own timeline
+   (not scroll-scrubbed, same change as the camera section), so there's no
+   frame index to key the reveal off. Instead it's a plain scroll-progress
+   threshold through the (now much shorter) wrapper: ~1/3 of the way in is
+   enough for the video to have settled into view before the stats card
+   arrives over it. */
+const COMPACT_CARD_APPEAR_PROGRESS = 0.3
+const COMPACT_CARD_HIDE_BELOW = 0.24
 
 const STATS = [
   { prefix: '×', countValue: 6.9, isDecimal: true, label: 'NPU · עיבוד בינה מלאכותית' },
@@ -64,7 +71,13 @@ export default function PerformanceFrameSection() {
   const [ready, setReady] = useState(false)
   const [cardVisible, setCardVisible] = useState(false)
   const cardVisibleRef = useRef(false)
-  const isCompact = useIsCompact(860)
+  // Explicitly pinned at 1180 (not the site-wide 768 default) — desktop's
+  // frame set is a genuinely different 16:9 widescreen asset (see comment
+  // above); object-fit:cover crops most of its width away at any
+  // non-widescreen aspect ratio, which covers every tablet width/orientation
+  // (768-1180), not just portrait. Tablets keep the mobile 1:1 asset/contain
+  // treatment, same as phones.
+  const isCompact = useIsCompact(1180)
   // This sequence is 47-101MB of PNGs depending on viewport — deferring the
   // preload loop below until the section is actually near the viewport
   // means a visitor who never scrolls this far never downloads it.
@@ -91,20 +104,64 @@ export default function PerformanceFrameSection() {
 
   useEffect(() => {
     if (!nearViewport) return
-    const canvas = canvasRef.current
     const wrapper = wrapperRef.current
-    if (!canvas || !wrapper) return
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
+    if (!wrapper) return
 
-    const { urls: frameUrls, numbers: frameNumbers, total: totalFrames } = isCompact ? MOBILE_FRAMES : DESKTOP_FRAMES
-    const cardAppearFrame = isCompact ? MOBILE_CARD_APPEAR_FRAME : DESKTOP_CARD_APPEAR_FRAME
-    const cardAppearIndex = frameNumbers.findIndex((n) => n >= cardAppearFrame)
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    cardVisibleRef.current = false
+    setCardVisible(false)
+
+    // Mobile: the chip video plays on its own (autoplay, not scroll-scrubbed
+    // — see COMPACT_CARD_APPEAR_PROGRESS comment), so there's no frame
+    // sequence to preload here at all; the stats card reveal is a plain
+    // scroll-progress threshold instead of a frame-index lookup.
+    if (isCompact) {
+      setReady(true)
+
+      if (reduceMotion) {
+        cardVisibleRef.current = true
+        setCardVisible(true)
+        return
+      }
+
+      const progressState = { p: 0 }
+      const ctxGsap = gsap.context(() => {
+        gsap.to(progressState, {
+          p: 1,
+          ease: 'none',
+          immediateRender: false,
+          onUpdate: () => {
+            const p = progressState.p
+            if (p >= COMPACT_CARD_APPEAR_PROGRESS && !cardVisibleRef.current) {
+              cardVisibleRef.current = true
+              setCardVisible(true)
+            } else if (p < COMPACT_CARD_HIDE_BELOW && cardVisibleRef.current) {
+              cardVisibleRef.current = false
+              setCardVisible(false)
+            }
+          },
+          scrollTrigger: {
+            trigger: wrapper,
+            start: 'top top',
+            end: 'bottom bottom',
+            scrub: 0.4,
+          },
+        })
+      }, wrapper)
+
+      return () => ctxGsap.revert()
+    }
+
+    // Desktop: unchanged frame-scrub canvas.
+    const canvas = canvasRef.current
+    const ctx = canvas?.getContext('2d')
+    if (!canvas || !ctx) return
+
+    const { urls: frameUrls, numbers: frameNumbers, total: totalFrames } = DESKTOP_FRAMES
+    const cardAppearIndex = frameNumbers.findIndex((n) => n >= DESKTOP_CARD_APPEAR_FRAME)
 
     imagesRef.current = Array(totalFrames).fill(null)
     setReady(false)
-    cardVisibleRef.current = false
-    setCardVisible(false)
 
     const drawFrame = (index: number) => {
       const img = imagesRef.current[index]
@@ -132,7 +189,6 @@ export default function PerformanceFrameSection() {
       img.src = url
     })
 
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const frameState = { frame: 0 }
 
     // Small hysteresis gap so a tiny scroll wobble right at the reveal point
@@ -185,47 +241,28 @@ export default function PerformanceFrameSection() {
   const bgColor = isCompact ? '#ececec' : '#000'
 
   return (
-    <div ref={wrapperRef} id="performance" style={{ height: '300vh', position: 'relative', background: bgColor }}>
+    <div ref={wrapperRef} id="performance" style={{ height: isCompact ? '180vh' : '300vh', position: 'relative', background: bgColor }}>
       <div style={{ position: 'sticky', top: 0, height: '100vh', width: '100%', overflow: 'hidden', background: bgColor }}>
-        <canvas
-          ref={canvasRef}
-          style={{
-            display: 'block',
-            width: '100%',
-            height: '100%',
-            objectFit: isCompact ? 'contain' : 'cover',
-            opacity: ready ? 1 : 0,
-            transition: 'opacity 0.3s ease',
-          }}
-        />
-
-        {isCompact && (
-          <>
-            <div
-              aria-hidden="true"
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                height: '10%',
-                background: `linear-gradient(to bottom, ${bgColor} 0%, transparent 100%)`,
-                pointerEvents: 'none',
-              }}
-            />
-            <div
-              aria-hidden="true"
-              style={{
-                position: 'absolute',
-                bottom: 0,
-                left: 0,
-                right: 0,
-                height: '10%',
-                background: `linear-gradient(to top, ${bgColor} 0%, transparent 100%)`,
-                pointerEvents: 'none',
-              }}
-            />
-          </>
+        {isCompact ? (
+          <video
+            src={performanceCompactVideo}
+            autoPlay
+            muted
+            playsInline
+            style={{ display: 'block', width: '100%', height: '100%', objectFit: 'contain' }}
+          />
+        ) : (
+          <canvas
+            ref={canvasRef}
+            style={{
+              display: 'block',
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              opacity: ready ? 1 : 0,
+              transition: 'opacity 0.3s ease',
+            }}
+          />
         )}
 
         {/* "For Galaxy" gold plaque — sits on the reflective floor right

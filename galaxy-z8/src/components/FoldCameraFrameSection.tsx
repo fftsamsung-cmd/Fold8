@@ -5,6 +5,7 @@ import { FeatureCard, useIsCompact } from './SectionKit'
 import { GalaxyAiDesktopCard, PHOTO_ASSIST_DATA } from './GalaxyAiStackSection'
 import horizontalLockVideo from '../assets/Fold/horizontal lock.mp4'
 import galaxyAiVideo from '../assets/Ultra/galaxy-ai.mp4'
+import cameraCompactVideo from '../assets/Fold/hf_20260719_054515_b5134926-b356-4ffa-b382-f1c6526ec6ed (1).mp4'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -105,26 +106,31 @@ const HLOCK_EXIT_END = 0.74
 /* Compact's own merged-pin handoff — same "one sticky screen, crossfade in
    place" technique as Design/Display's mobile sections, now carried all the
    way through the camera story instead of releasing into normal-flow cards:
-   frames scrub across 0 → COMPACT_FRAME_END, crossfade into the title/specs/
-   steps content, hold, crossfade into Horizontal Lock, hold, crossfade into
-   Photo Assist, hold until the wrapper's scroll runway ends and releases
-   into normal flow (nothing follows below anymore — Photo Assist is the
-   last card). Each *_ENTER constant is where the incoming layer reaches full
-   opacity; the outgoing layer's exit band is implicitly [prev *_ENTER, this
-   phase's own enter-start] — see the enterT/exitT pairs in the onUpdate
-   below, same enterT*(1-exitT) shape CrossfadeStage uses for N-layer
-   crossfades, just written out per named phase instead of a generic loop
-   (matches this file's existing CAMERA_PHASE_END-style constants). */
-const COMPACT_FRAME_END = 0.32
-// Widened from 0.08 to 0.16 — the camera→content handoff was fading in too
-// abruptly; everything downstream shifts +0.08 with it to keep the same
-// hold durations for content/Horizontal Lock (only the final photo hold
-// shrinks slightly, from 0.16 to 0.08, to stay inside the 0–1 range).
-const COMPACT_CONTENT_ENTER = 0.48
-const COMPACT_CONTENT_EXIT_START = 0.6
-const COMPACT_HLOCK_ENTER = 0.68
-const COMPACT_HLOCK_EXIT_START = 0.84
-const COMPACT_PHOTO_ENTER = 0.92
+   the camera video plays on its own (not scroll-scrubbed, see
+   COMPACT_FRAME_END comment below) across 0 → COMPACT_FRAME_END, crossfades
+   into the title/specs/steps content, hold, crossfade into Horizontal Lock,
+   hold, crossfade into Photo Assist, hold until the wrapper's scroll runway
+   ends and releases into normal flow (nothing follows below anymore — Photo
+   Assist is the last card). Each *_ENTER constant is where the incoming
+   layer reaches full opacity; the outgoing layer's exit band is implicitly
+   [prev *_ENTER, this phase's own enter-start] — see the enterT/exitT pairs
+   in the onUpdate below, same enterT*(1-exitT) shape CrossfadeStage uses for
+   N-layer crossfades, just written out per named phase instead of a generic
+   loop (matches this file's existing CAMERA_PHASE_END-style constants). */
+// Was 0.32 of a 440vh wrapper (~141vh) back when this phase scrubbed through
+// still frames one-by-one via scroll — needed that much runway to give each
+// frame room to appear. Now that the visual is a real video playing on its
+// own timeline, scroll only needs to hold it on screen briefly before
+// handing off; shrunk to 0.14 of the now-350vh wrapper (~49vh) and every
+// later phase's *_ENTER shifted down to keep the same hold durations
+// (content/Horizontal Lock/Photo Assist pacing is unchanged, just packed
+// into a shorter total scroll distance).
+const COMPACT_FRAME_END = 0.14
+const COMPACT_CONTENT_ENTER = 0.34
+const COMPACT_CONTENT_EXIT_START = 0.5
+const COMPACT_HLOCK_ENTER = 0.6
+const COMPACT_HLOCK_EXIT_START = 0.8
+const COMPACT_PHOTO_ENTER = 0.9
 
 const clamp01 = (v: number) => Math.min(Math.max(v, 0), 1)
 
@@ -262,7 +268,10 @@ export default function FoldCameraFrameSection() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const imagesRef = useRef<(HTMLCanvasElement | null)[]>(Array(TOTAL_FRAMES).fill(null))
   const [ready, setReady] = useState(false)
-  const isCompact = useIsCompact(860)
+  // Explicitly pinned at 1180 (not the site-wide 768 default) — same reason
+  // as Ultra's CameraFrameSection: the desktop overlay's negative right/left
+  // offsets assume page margin only real desktop widths have.
+  const isCompact = useIsCompact(1180)
   // This exploded-parts sequence is ~12MB of PNGs — deferring the preload
   // loop below until the section is actually near the viewport means a
   // visitor who never scrolls this far never downloads it.
@@ -304,57 +313,68 @@ export default function FoldCameraFrameSection() {
 
   useEffect(() => {
     if (!nearViewport) return
-    const canvas = canvasRef.current
     const wrapper = wrapperRef.current
-    if (!canvas || !wrapper) return
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
+    if (!wrapper) return
 
-    const drawFrame = (index: number) => {
-      const frame = imagesRef.current[index]
-      if (!frame) return
-      if (canvas.width !== frame.width) {
-        canvas.width = frame.width
-        canvas.height = frame.height
-      }
-      ctx.clearRect(0, 0, canvas.width, canvas.height)
-      ctx.drawImage(frame, 0, 0)
-    }
-
-    const svg = connectorsRef.current
-    const updatePaths = () => {
-      if (!svg) return
-      const svgRect = svg.getBoundingClientRect()
-      if (!svgRect.width || !svgRect.height) return
-      rowRefs.current.forEach((row, i) => {
-        const path = pathRefs.current[i]
-        if (!row || !path) return
-        const rowRect = row.getBoundingClientRect()
-        const startX = ((rowRect.left - svgRect.left) / svgRect.width) * 1672
-        const startY = ((rowRect.top + rowRect.height / 2 - svgRect.top) / svgRect.height) * 941
-        const [ex, ey] = LENS_TARGETS[i]
-        const c1x = startX + (ex - startX) * CURVE_C1.x
-        const c1y = startY + (ey - startY) * CURVE_C1.y
-        const c2x = startX + (ex - startX) * CURVE_C2.x
-        const c2y = startY + (ey - startY) * CURVE_C2.y
-        path.setAttribute('d', `M ${startX} ${startY} C ${c1x} ${c1y}, ${c2x} ${c2y}, ${ex} ${ey}`)
-      })
-    }
-
-    let firstFrameReady = false
-    FRAME_URLS.forEach((url, i) => {
-      const img = new Image()
-      img.onload = () => {
-        imagesRef.current[i] = stripBackground(img)
-        if (i === 0 && !firstFrameReady) {
-          firstFrameReady = true
-          drawFrame(0)
-          setReady(true)
-          requestAnimationFrame(updatePaths)
+    // Desktop-only: the exploded-parts frame sequence, drawn to a canvas and
+    // scrubbed by scroll. Compact no longer uses this at all — its camera
+    // visual is a real playing <video> now (see COMPACT_FRAME_END comment) —
+    // so none of this canvas/frame-loading work is needed there, and
+    // skipping it means mobile visitors never download the ~12MB PNG
+    // sequence in the first place.
+    let updatePaths = () => {}
+    let drawFrame = (_index: number) => {}
+    if (!isCompact) {
+      const canvas = canvasRef.current
+      const ctx = canvas?.getContext('2d')
+      if (canvas && ctx) {
+        drawFrame = (index: number) => {
+          const frame = imagesRef.current[index]
+          if (!frame) return
+          if (canvas.width !== frame.width) {
+            canvas.width = frame.width
+            canvas.height = frame.height
+          }
+          ctx.clearRect(0, 0, canvas.width, canvas.height)
+          ctx.drawImage(frame, 0, 0)
         }
+
+        const svg = connectorsRef.current
+        updatePaths = () => {
+          if (!svg) return
+          const svgRect = svg.getBoundingClientRect()
+          if (!svgRect.width || !svgRect.height) return
+          rowRefs.current.forEach((row, i) => {
+            const path = pathRefs.current[i]
+            if (!row || !path) return
+            const rowRect = row.getBoundingClientRect()
+            const startX = ((rowRect.left - svgRect.left) / svgRect.width) * 1672
+            const startY = ((rowRect.top + rowRect.height / 2 - svgRect.top) / svgRect.height) * 941
+            const [ex, ey] = LENS_TARGETS[i]
+            const c1x = startX + (ex - startX) * CURVE_C1.x
+            const c1y = startY + (ey - startY) * CURVE_C1.y
+            const c2x = startX + (ex - startX) * CURVE_C2.x
+            const c2y = startY + (ey - startY) * CURVE_C2.y
+            path.setAttribute('d', `M ${startX} ${startY} C ${c1x} ${c1y}, ${c2x} ${c2y}, ${ex} ${ey}`)
+          })
+        }
+
+        let firstFrameReady = false
+        FRAME_URLS.forEach((url, i) => {
+          const img = new Image()
+          img.onload = () => {
+            imagesRef.current[i] = stripBackground(img)
+            if (i === 0 && !firstFrameReady) {
+              firstFrameReady = true
+              drawFrame(0)
+              setReady(true)
+              requestAnimationFrame(updatePaths)
+            }
+          }
+          img.src = url
+        })
       }
-      img.src = url
-    })
+    }
 
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
@@ -384,10 +404,10 @@ export default function FoldCameraFrameSection() {
       // Compact drops the overlay reveal choreography entirely (title/
       // specs/steps render as their own crossfading layer instead of
       // absolutely-positioned overlays synced to frame exposure) — this pin
-      // drives the frame-scrub canvas, then a merged-pin handoff crossfades
-      // through content → Horizontal Lock → Photo Assist, each fading + rising
-      // in over the previous layer in the same spot. See the COMPACT_* phase
-      // constants above.
+      // holds on the camera video (playing on its own, not scroll-driven),
+      // then a merged-pin handoff crossfades through content → Horizontal
+      // Lock → Photo Assist, each fading + rising in over the previous layer
+      // in the same spot. See the COMPACT_* phase constants above.
       const setLayer = (el: HTMLDivElement | null, opacity: number) => {
         if (!el) return
         el.style.opacity = String(opacity)
@@ -402,8 +422,6 @@ export default function FoldCameraFrameSection() {
           immediateRender: false,
           onUpdate: () => {
             const overall = frameState.p
-            const frameLocal = clamp01(overall / COMPACT_FRAME_END)
-            drawFrame(Math.round(frameLocal * (TOTAL_FRAMES - 1)))
 
             const contentEnterT = clamp01((overall - COMPACT_FRAME_END) / (COMPACT_CONTENT_ENTER - COMPACT_FRAME_END))
             const contentExitT = clamp01((overall - COMPACT_CONTENT_EXIT_START) / (COMPACT_HLOCK_ENTER - COMPACT_CONTENT_EXIT_START))
@@ -714,18 +732,19 @@ export default function FoldCameraFrameSection() {
   if (isCompact) {
     return (
       <>
-        {/* Frame-scrub visual, then a merged-pin handoff through content →
-           Horizontal Lock → Photo Assist — each one fades + rises in over
-           the previous layer, all in the same sticky screen, no separate
-           scrolled-into-view cards afterward. The overlay title/subtitle/
-           connector-lines/floating specs and steps cards only make sense
-           with the wide surrounding margin a 1920px desktop stage has around
-           a small centered phone — on a phone-width viewport they collided
-           with each other and with the image itself, so compact drops that
-           overlay language entirely and re-renders the same copy as a plain
-           stacked content layer instead (see the COMPACT_* phase constants
-           above). */}
-        <div ref={wrapperRef} id="cameras" style={{ height: '440vh', position: 'relative', background: '#fff' }}>
+        {/* Camera video (plays on its own, not scroll-scrubbed — see the
+           COMPACT_FRAME_END comment), then a merged-pin handoff through
+           content → Horizontal Lock → Photo Assist — each one fades + rises
+           in over the previous layer, all in the same sticky screen, no
+           separate scrolled-into-view cards afterward. The overlay title/
+           subtitle/connector-lines/floating specs and steps cards only make
+           sense with the wide surrounding margin a 1920px desktop stage has
+           around a small centered phone — on a phone-width viewport they
+           collided with each other and with the image itself, so compact
+           drops that overlay language entirely and re-renders the same copy
+           as a plain stacked content layer instead (see the COMPACT_* phase
+           constants above). */}
+        <div ref={wrapperRef} id="cameras" style={{ height: '350vh', position: 'relative', background: '#fff' }}>
           <div style={{ position: 'sticky', top: 0, height: '100vh', width: '100%', overflow: 'hidden', background: '#fff' }}>
             <div
               ref={cameraLayerRef}
@@ -740,20 +759,21 @@ export default function FoldCameraFrameSection() {
                 boxSizing: 'border-box',
               }}
             >
-              <div style={{ position: 'relative', maxHeight: '70vh', maxWidth: '88vw' }}>
-                <canvas
-                  ref={canvasRef}
-                  style={{
-                    maxHeight: '70vh',
-                    maxWidth: '88vw',
-                    width: 'auto',
-                    height: 'auto',
-                    display: 'block',
-                    opacity: ready ? 1 : 0,
-                    transition: 'opacity 0.3s ease',
-                  }}
-                />
-              </div>
+              <video
+                src={cameraCompactVideo}
+                autoPlay
+                muted
+                playsInline
+                style={{
+                  maxHeight: '70vh',
+                  maxWidth: '88vw',
+                  width: 'auto',
+                  height: 'auto',
+                  display: 'block',
+                  borderRadius: 18,
+                  boxShadow: '0 24px 60px rgba(0,0,0,0.14)',
+                }}
+              />
             </div>
 
             <div

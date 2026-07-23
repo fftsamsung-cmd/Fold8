@@ -33,7 +33,7 @@ gsap.registerPlugin(ScrollTrigger)
    after mount, for environments that report a transiently narrow
    innerWidth on the very first layout pass (e.g. an embedded viewport still
    settling to its final size) before an actual resize event would catch it. */
-export function useIsCompact(breakpoint = 860, { settle = false }: { settle?: boolean } = {}) {
+export function useIsCompact(breakpoint = 768, { settle = false }: { settle?: boolean } = {}) {
   const [isCompact, setIsCompact] = useState(() => typeof window !== 'undefined' && window.innerWidth < breakpoint)
 
   useEffect(() => {
@@ -259,12 +259,13 @@ export function CrossfadeStage({
   layers,
   /** Below this width the pinned scroll-jack crossfade falls back to a
    * plain stacked layout (same fallback used for prefers-reduced-motion).
-   * Default 860 matches the rest of the site's tablet/mobile breakpoint.
+   * Default 768 matches the rest of the site's phone/tablet breakpoint —
+   * tablets (768px+) get the real pinned crossfade instead of the fallback.
    * Pass 0 to disable the fallback entirely and keep the pinned animation
    * at every width — the caller is then responsible for making sure every
    * layer fits a 100vh viewport (or has its own internal scroll, e.g.
    * MainLayer's `pinned` prop / FeatureCard's `pinned` prop). */
-  compactBreakpoint = 860,
+  compactBreakpoint = 768,
 }: {
   id: string
   ariaLabel: string

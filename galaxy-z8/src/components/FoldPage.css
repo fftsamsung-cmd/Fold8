@@ -32,13 +32,15 @@
 
 /* ============================================================
    Responsive pass (mobile / tablet only — desktop untouched).
-   Same two fixes proven on Flip8's equivalent pass:
+   Same two fixes proven on Flip8's equivalent pass. Raised from 860px to
+   1180px so the whole tablet band (768-1180px), not just phones, gets
+   these fixes.
    ============================================================ */
-@media (max-width: 860px) {
+@media (max-width: 1180px) {
   /* .ultra-split/.ultra-split--reverse (shared, UltraPage.css) only stack
      below the site-wide 560px breakpoint — cramped two-column layout on
      portrait tablets otherwise (Design/Colors here). Raise it to the same
-     860px threshold FeatureCard/CrossfadeStage already use. */
+     threshold FeatureCard/CrossfadeStage already use. */
   .fold .ultra-split,
   .fold .ultra-split--reverse {
     flex-direction: column;
